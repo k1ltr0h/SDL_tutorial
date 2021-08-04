@@ -7,7 +7,7 @@ public:
     //GameObject();
     ~GameObject();
 
-    void init(SDL_Renderer* ren, int width_, int height_);
+    void init(SDL_Renderer* ren, int x_, int y_, int width_, int height_);
     virtual void render();
     void update();
     void gravity();

@@ -6,12 +6,12 @@ GameObject::~GameObject(){
     SDL_DestroyTexture(texture);
 }
 
-void GameObject::init(SDL_Renderer* ren, int width_, int height_){
+void GameObject::init(SDL_Renderer* ren, int x_, int y_, int width_, int height_){
     renderer = ren;
     width = width_;
     height = height_;
-    pos_x = 0;
-    pos_y = 380;
+    pos_x = x_;
+    pos_y = y_;
     vel_x = 5;
     vel_y = G;
     ac_x = 0;
@@ -34,7 +34,6 @@ void GameObject::gravity(){
     pos_y = get_position();
     
     if(pos_y >= 380){
-        //printf("o.o");
         vel_y = 0;
         pos_y = 380;
     }

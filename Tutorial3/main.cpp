@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "Player.h"
 
-// g++ -Wall main.cpp GameObject.cpp Player.cpp -o tutorial -lmingw32 -lSDL2main -lSDL2
+// g++ -Wall *.cpp -o tutorial -lmingw32 -lSDL2main -lSDL2
 
 // Funciones
 Uint32 keyPressed(Uint32 interval, void* obj);
@@ -16,7 +16,7 @@ int height = 480;
 // Variables de entorno
 bool endGame = false;
 // Imagenes
-SDL_Surface* sonic = NULL;
+SDL_Surface* player_img = NULL;
 // Variables
 SDL_TimerID phisics;
 SDL_TimerID graphics;
@@ -31,7 +31,7 @@ int main(int argc, char* args[]){
 	}
 	else{
 		// SDL_WINDOW_HIDDEN,  SDL_WINDOW_SHOWN
-		window = SDL_CreateWindow( "Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow("Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
 		if( window == NULL ){
 			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
             return -1;
@@ -40,13 +40,13 @@ int main(int argc, char* args[]){
     //SDL_Delay(1000); // Uint32 ms
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	sonic = SDL_LoadBMP("../imgs/sonic.bmp");
+	player_img = SDL_LoadBMP("../imgs/player_v2.bmp");
 	//SDL_Texture* tex =  SDL_CreateTextureFromSurface(renderer, sonic);
     //SDL_FreeSurface(sonic);
 
     int delay = 1000/30;
 
-    player = new Player(renderer, sonic);
+    player = new Player(renderer, player_img);
 
     phisics = SDL_AddTimer(delay, keyPressed, NULL);
     graphics = SDL_AddTimer(delay, rendering, (void*)player);
@@ -105,7 +105,7 @@ Uint32 keyPressed(Uint32 interval, void* obj){
         x -= 5;
     }
     if(keystate[SDL_SCANCODE_SPACE] && y == 380){
-        vel_y = -100;
+        vel_y = -80;
     }
 
     player->set_y(y);

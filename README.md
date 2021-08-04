@@ -4,7 +4,8 @@
 * El primero tutorial no lo alcanzé a apartar pero contenía la instalación de SLD y MingW,
 los paths y la creación de la ventana.
 * Tutorial 2: Surface, Texture, Renderer, dibujar en pantalla.
-* Tutorial 3: Gravedad, Movimiento fluido, Motores(gráfico y físico), memory leaks, clases(GameObject y Player).
+* Tutorial 3: Gravedad, Movimiento fluido, Motores(gráfico y físico), memory leaks, clases(GameObject y Player),
+transparencia y cambio de sprite.
 
 Bien lejos en algún lugar, vivía la esperanza de que el mundo pudiera cambiar de parecer,
 las tragedias e injusticias siempre han pasado, pero cada cierto tiempo las y los abusados
