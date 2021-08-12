@@ -99,10 +99,10 @@ Uint32 keyPressed(Uint32 interval, void* obj){
         y -= 5;
     }*/
     if(keystate[SDL_SCANCODE_RIGHT]){
-        x += 5;
+        x += 10;
     }
     if(keystate[SDL_SCANCODE_LEFT]){
-        x -= 5;
+        x -= 10;
     }
     if(keystate[SDL_SCANCODE_SPACE] && y == 380){
         vel_y = -80;
