@@ -1,22 +1,25 @@
 #include "GameObject.h"
 
-#define G 10
+#define G 10 // positivo porque 'y' crece hacia abajo en la pantalla
 
 GameObject::~GameObject(){
     SDL_DestroyTexture(texture);
+    pos.~Vector2D();
+    vel.~Vector2D();
+    acc.~Vector2D();
 }
 
-void GameObject::init(SDL_Renderer* ren, int x_, int y_, int width_, int height_){
+void GameObject::init(SDL_Renderer* ren, Vector2D pos_, int width_, int height_, bool grav_activated_){
     renderer = ren;
     width = width_;
     height = height_;
-    pos_x = x_;
-    pos_y = y_;
-    vel_x = 5;
-    vel_y = G;
-    ac_x = 0;
-    ac_y = G;
-    dst_rect = {0, 0, width, height};
+    pos = pos_;
+    vel = Vector2D();
+    acc = Vector2D(0, G);
+    max_velX = 10, max_velY = 200;
+    //movingX = false, movingY= false;
+    gravity_activated = grav_activated_;
+    dst_rect = {pos.getX(), pos.getY(), width, height};
 }
 
 void GameObject::render(){
@@ -24,38 +27,128 @@ void GameObject::render(){
 }
 
 void GameObject::update(){
-    gravity();
-    dst_rect = {pos_x, pos_y, width, height};
+    // if is moving acceleration is updated before
+    // Update position
+    get_position();
+    // Update velocity
+    get_velocity();
+    //printf("Vel: %d-%d\n", vel.getX(), vel.getY());
+    //printf("Acc: %d-%d\n", acc.getX(), acc.getY());
+    // Hard-coding as ground
+    ground();
+    // Player brakes, but only is updated if is not moving because velocity updates after move function is called.
+    brake();
+
+    dst_rect = {pos.getX(), pos.getY(), width, height};
 }
 
-void GameObject::gravity(){
 
-    vel_y = get_velocity();
-    pos_y = get_position();
+void GameObject::move(int dir){
+    if(dir == dir::RIGHT){
+        acc.setX(1);
+        //movingX = true;
+    }
+    else if(dir == dir::LEFT){
+        acc.setX(-1);
+        //movingX = true;
+    }
+    else if(dir == dir::UP){
+        acc.setY(1);
+        //movingY = true;
+    }
+    else if(dir == dir::DOWN){
+        acc.setY(-1);
+        //movingY = true;
+    }
     
-    if(pos_y >= 380){
-        vel_y = 0;
-        pos_y = 380;
+}
+
+void GameObject::stop(int axis){
+    if(axis == axis::VERTICAL){
+        vel.setY(0);
+        acc.setY(0);
+        //movingY = false;
+    }
+    else if(axis == axis::HORIZONTAL){
+        vel.setX(0);
+        acc.setX(0);
+        //movingX = false;
     }
 }
 
-int GameObject::get_position(){
-    return pos_y + vel_y + (ac_y/2);
+void GameObject::brake(){
+    int* curr_vel = vel.getXY();
+    //double brakeX = (double)2/max_velX;
+
+    //printf("brakeX: %f %d\n", brakeX, curr_vel[0]);
+
+    //movingX = false;
+
+    if(curr_vel[0] > 0){
+        acc.setX(-1);
+    }
+    else if(curr_vel[0] < 0){
+        acc.setX(1);
+    }
+
+    else if(curr_vel[0] == 0){
+        acc.setX(0);
+    }
+
+    if(curr_vel[1] < 0){
+        acc.setY(G);
+    }
+
+    else if(curr_vel[1] == 0 && pos.getY() >= 380){
+        acc.setY(0);
+    }
+
+    delete[] curr_vel;
 }
 
-int GameObject::get_velocity(){
-    return vel_y + ac_y;
+void GameObject::ground(){ // Hard-coding for fake ground
+    //vel_y = get_velocity();
+    //pos_y = get_position();
+    
+    if(pos.getY() >= 380){
+        //vel_y = 0;
+        pos.setY(380);
+    }
 }
 
-int GameObject::get_x(){
-    return pos_x;
+Vector2D GameObject::get_position(int t){
+    int x = pos.getX() + vel.getX()*t + (acc.getX()/2)*(t*t);
+    int y = pos.getY() + vel.getY()*t + (acc.getY()/2)*(t*t);
+    pos.setXY(x, y);
+    return pos;
 }
-int GameObject::get_y(){
-    return pos_y;
+
+Vector2D GameObject::get_velocity(int t){
+    int x = vel.getX() + acc.getX()*t;
+    int y = 0;
+    if(pos.getY() < 380){ // Hard-coding for fake gravity
+        y = vel.getY() + acc.getY()*t;
+    }
+
+    if(x > max_velX){
+        x = max_velX;
+    }
+    else if(x < -max_velX){
+        x = -max_velX;
+    }
+
+    if(y > max_velY){
+        y = max_velY;
+    }
+    else if(y < -max_velY){
+        y = -max_velY;
+    }
+
+    vel.setXY(x, y);
+    
+    return vel;
 }
-int GameObject::get_vel_y(){
-    return vel_y;
-}
+
 SDL_Texture* GameObject::get_texture(){
     return texture;
 }
@@ -63,15 +156,16 @@ SDL_Renderer* GameObject::get_renderer(){
     return renderer;
 }
 
-void GameObject::set_x(int x_){
-    pos_x = x_;
+Vector2D* GameObject::get_current_pos(){
+    return &pos;
 }
-void GameObject::set_y(int y_){
-    pos_y = y_;
+Vector2D* GameObject::get_current_vel(){
+    return &vel;
 }
-void GameObject::set_vel_y(int vel_y_){
-    vel_y = vel_y_;
+Vector2D* GameObject::get_current_acc(){
+    return &acc;
 }
+
 void GameObject::set_texture(SDL_Texture* tex){
     texture = tex;
 }

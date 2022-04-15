@@ -1,7 +1,7 @@
 # SDL C/C++ Tutorial en Español
 ## Contenido
 
-* El primero tutorial no lo alcanzé a apartar pero contenía la instalación de SLD y MingW,
+* El primero tutorial no lo alcanzé a apartar pero contenía la instalación de SDL y MingW,
 los paths y la creación de la ventana.
 * Tutorial 2: Surface, Texture, Renderer, dibujar en pantalla.
 * Tutorial 3: Gravedad, Movimiento fluido, Motores(gráfico y físico), memory leaks, clases(GameObject y Player),
@@ -15,5 +15,11 @@ por fin dormia tranquila aunque nada es perfecto en la sociedad, aún habían pe
 luchando por sus derechos y exigiendo equidad entre sexos y razas, pero nadie escuchaba la maldad,
 nadie escuchaba los infiernos que soportaban aquellos que vivian para servir el capricho de la injusta y egoísta humanidad.
 
+## Como compilar
 
-**Creado por Insuretro(K1ltr0).**
+Ejecutar el siguiente comando en consola:
+
+`g++ -Wall *.cpp -o tutorial -lmingw32 -lSDL2main -lSDL2`
+
+
+**Creado por InsuRetro(K1ltr0).**
