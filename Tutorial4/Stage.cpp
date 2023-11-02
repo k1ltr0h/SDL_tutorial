@@ -1,64 +1,89 @@
 #include "Stage.h"
 
-Stage::Stage(SDL_Renderer* ren, SDL_Surface* skin_, Player* player_):Layer(ren, skin_){
-    player = player_;
-    spawn.push_back(player);
-    left = true;
-    right = true;
-    up = true;
-    down = true;
-    create_scenario(TUTORIAL);
-    set_dstRect(0, 0, 640, 480);
+Stage::Stage(SDL_Window* window_, Player* prota_, Background* background_=NULL){
+    window = window_;
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    prota = prota_;
+    objects.push_back(prota);
+    background = background_;
+
+    SDL_Surface* bg_surface = background->get_surface();
+    clean_surface = SDL_ConvertSurface(bg_surface, bg_surface->format, SDL_SWSURFACE);
+}
+
+Stage::~Stage(){
+    for(iter = objects.begin(); iter != objects.end(); iter++){
+        delete *iter;
+    }
 }
 
 void Stage::render(){
-    GameObject::render();
+    update();
+    background->set_surface(SDL_ConvertSurface(clean_surface, clean_surface->format, SDL_SWSURFACE));
 
-    for(iter = spawn.begin(); iter != spawn.end(); iter++){
-        (*iter)->render();
+    for(iter = objects.begin(); iter != objects.end(); iter++){
+        background->blit_surface(*iter);
     }
+    render_background();
+}
+
+void Stage::render_background(){
+    Vector2D* pos = prota->get_current_pos();
+    SDL_Rect* bg_rect = background->get_src_rect();
+
+    int sprite_width = bg_rect->w;
+    int sprite_height = bg_rect->h;
+    int source_x = pos->get_x() - (sprite_width/2);
+    int source_y = 0;
+
+    int left_boundary = 0;
+    int right_boundary = background->get_surface_width() - sprite_width;
+
+    if(source_x < left_boundary){
+        source_x = left_boundary; 
+    }
+    else if(source_x > right_boundary){
+        source_x = right_boundary;
+    }
+
+    background->set_src_rect(source_x, source_y, sprite_width, sprite_height);
+    background->render(renderer);
 }
 
 void Stage::update(){
-
-    list_to_list(spawn, spawn);
-
-    for(iter = spawn.begin(); iter != spawn.end(); iter++){
+    for(iter = objects.begin(); iter != objects.end(); iter++){
         (*iter)->update();
     }
+    boundary();
 }
 
-void Stage::create_scenario(int id){
-    switch(id){
-        case TUTORIAL:
-            spawn.push_back(new Box(get_renderer(), SDL_LoadBMP("../imgs/box.bmp")));
-            break;
-    };
-}
+void Stage::boundary(){
+    Vector2D* pos = prota->get_current_pos();
 
-void Stage::list_to_list(std::list<GameObject *> list, std::list<GameObject *> otherlist){
-    //printf("%d\n",(*iter)->get_X());
-    for(iter = list.begin(); iter != list.end(); iter++){
-        //printf("%d\n",(*iter)->get_X());
-        left = true, right = true, up = true, down = true;
-        for(iter2 = otherlist.begin(); iter2 != otherlist.end(); iter2++){
-            if((*iter) != (*iter2)){
+    int left_boundary = 0;
+    int right_boundary = background->get_surface_width();
 
-                //if((*iter)->get_ID() == PLAYER || (*iter)->get_ID() == ENEMY){(*iter) = (Animal*)(*iter);} No es necesario, virtual ya cumple esa función :D
-                (*iter)->checkCollisions(*iter2);
-                //Esto se utiliza para tener en cuenta multiples colisiones
-                save_Collisions(*iter);
-            }
-        }
-        (*iter)->set_mv_R(right);
-        (*iter)->set_mv_L(left);
-        (*iter)->set_mv_D(down);
-        (*iter)->set_mv_U(up);
+    if(pos->get_x() < left_boundary){
+        pos->set_x(left_boundary);
+        prota->stop(GameObject::axis::ABSCISSA);
+        prota->center(); 
+    }
+    else if(pos->get_x() > right_boundary){
+        pos->set_x(right_boundary);
+        prota->stop(GameObject::axis::ABSCISSA);
+        prota->center(); 
     }
 }
-void Stage::save_Collisions(GameObject* obj){
-    if(!obj->get_mv_R()){right = false;}
-    if(!obj->get_mv_D()){down = false;}
-    if(!obj->get_mv_L()){left = false;}
-    if(!obj->get_mv_U()){up = false;}
+
+void Stage::objects_push_back(GameObject* obj){
+    objects.push_back(obj);
+}
+
+
+SDL_Renderer* Stage::get_renderer(){
+    return renderer;
+}
+
+void Stage::set_background(Background* background_){
+    background = background_;
 }

@@ -1,65 +1,75 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <stdio.h>
-#include <list>
+#include "Vector2D.h"
 
 class GameObject{
 public:
-    //GameObject();
-    ~GameObject();
+    GameObject(SDL_Surface* sur_=NULL, SDL_Rect rect_={0,0,100,100}, Vector2D pos_=Vector2D(),
+    bool collidable_=true, bool grav_activated_=true);
+    virtual ~GameObject();
 
-    void init(SDL_Renderer* ren, SDL_Surface* skin_, int x_, int y_, int width_, int height_);
-    virtual void render();
-    virtual void update();
-    void gravity();
-    int get_position(); // Ecuación
-    int get_velocity(); // Ecuación
+    virtual void render(SDL_Renderer* renderer);
+    virtual void update(bool centered=true);
+    virtual void move(int dir);
+    void stop(int axis);
+    void brake(); // frenar
+    void ground();
+    void center();
+    void blit_surface(GameObject* obj);
+    Vector2D get_position(int t=1); ///< Ecuación // t = 1 --> 1 frame
+    Vector2D get_velocity(int t=1); ///< Ecuación // t = 1 --> 1 frame
     // Getters
-    int get_pos_x();
-    int get_pos_y();
-    int get_vel_y();
-    int get_vel_x();
-    int get_bound_x();
-    int get_bound_y();
-    bool get_mv_R(); //
-    bool get_mv_L(); //
-    bool get_mv_D(); //
-    bool get_mv_U();
-    SDL_Surface* get_skin();
+    SDL_Surface* get_surface();
     SDL_Texture* get_texture();
-    SDL_Renderer* get_renderer();
+    Vector2D* get_current_pos();
+    Vector2D* get_current_vel();
+    Vector2D* get_current_acc();
+    SDL_Rect* get_src_rect();
+    SDL_Rect* get_dst_rect();
+    int get_surface_height();
+    int get_surface_width();
+    unsigned int get_depth();
+    char get_orientation();
+    bool get_on_air();
     // Setters
-    void set_pos_x(int x_);
-    void set_pos_y(int y_);
-    void set_vel_y(int vel_y_);
-    void set_texture(SDL_Texture* tex);
-    void set_renderer(SDL_Renderer* ren);
-    void set_dstRect(int x_, int y_, int w_, int h_);
-    virtual void collided(GameObject* obj);
-    void checkCollisions(GameObject *otherObject);
+    void set_surface(SDL_Surface* sur_);
+    void set_texture(SDL_Texture* tex_);
 
-    virtual void move_Up();
-    virtual void move_Down();
-    virtual void move_Left();
-    virtual void move_Right();
+    void set_dst_rect(int x_, int y_, int w_, int h_);
+    void set_src_rect(int x_, int y_, int w_, int h_);
+    void set_dst_rect_dimensions(int w_, int h_);
+    void set_src_rect_dimensions(int w_, int h_);
+    void set_dst_rect_position(int x_, int y_);
+    void set_src_rect_position(int x_, int y_);
 
-    void set_mv_R(bool r);
-    void set_mv_L(bool l);
-    void set_mv_U(bool u);
-    void set_mv_D(bool d);
+    void set_depth(unsigned int depth_);
+    void set_orientation(char orientation_);
+    void set_on_air(bool on_air_);
+
+    enum dir{RIGHT=0, UP=90, LEFT=180, DOWN=270}; ///< controller (buttons)
+    enum axis{ABSCISSA, ORDINATE, ALL}; ///< eje -> x, y, all
 
 private:
-    bool mv_up, mv_down, mv_left, mv_right;//! Sirve para las colisiones, permite movimiento es esa direccion
-    int pos_x, pos_y;
-    int center_x, center_y;
-    int bound_x, bound_y;
-    int vel_x, vel_y;
-    int ac_x, ac_y;
-    int width, height;
-    SDL_Rect src_rect;
-    SDL_Rect dst_rect;
-    SDL_Surface* skin = NULL;
+    SDL_Rect src_rect, dst_rect;
+    SDL_Surface* surface = NULL;
     SDL_Texture* texture = NULL;
-    SDL_Renderer* renderer = NULL;
+
+    Vector2D pos;
+    Vector2D vel;
+    Vector2D acc;
+    //Vector2D::Coord src_rect_coord;
+    //Vector2D::Coord dst_rect_coord;
+
+    bool gravity_activated;
+    bool collidable;
+    bool on_air = false;
+
+    int orientation; ///< Orientación 0-360°
+    int max_vel_x, max_vel_y;
+    int surface_width, surface_height;
+    //int src_rect_w, src_rect_h;
+    //int dst_rect_w, dst_rect_h;
+    unsigned int depth; ///< profundidad -> prioridad de dibujado (eje z): valores del 0 al 9 reservados para capas de background.
 };
 

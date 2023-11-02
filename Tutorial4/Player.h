@@ -1,15 +1,11 @@
-#include "GameObject.h"
+#pragma once
+#include "Character.h"
 
-class Player: public GameObject{
+class Player: public Character{
 public:
-    Player(SDL_Renderer* ren, SDL_Surface* skin_);
-    // Getters
-    void set_directionValue(int dir, bool action);
-    int get_directionValue(int dir);
-    enum dir{RIGHT, LEFT, UP, DOWN, ALL_H};
+    Player(SDL_Surface* skin_, Vector2D pos_);
+    ~Player();
+
 private:
-    bool right;
-    bool left;
-    bool up;
-    bool down;
+    int life;
 };

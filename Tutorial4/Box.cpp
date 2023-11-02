@@ -1,5 +1,6 @@
 #include "Box.h"
 
-Box::Box(SDL_Renderer* ren, SDL_Surface* skin_){
-    GameObject::init(ren, skin_, 200, 100, 60, 60);
+Box::Box(SDL_Surface* skin_, Vector2D pos_):
+GameObject::GameObject(skin_, {0,0,60,60}, pos_){
+
 }

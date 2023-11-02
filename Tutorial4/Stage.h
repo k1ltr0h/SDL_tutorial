@@ -1,20 +1,35 @@
-#include "Layer.h"
-#include "Box.h"
+#pragma once
+#include <list>
+#include <iterator>
 #include "Player.h"
+#include "Background.h"
+#include "Box.h"
 
-class Stage: public Layer{
+class Stage{
 public:
-    Stage(SDL_Renderer* ren, SDL_Surface* skin_, Player* player_);
+
+    Stage(SDL_Window* window_, Player* prota_, Background* background_);
+    virtual ~Stage();
     void render();
+    void render_background();
     void update();
-    void create_scenario(int id);
-    void list_to_list(std::list<GameObject *> list, std::list<GameObject *> otherlist);
-    void save_Collisions(GameObject* obj);
-    enum scenario{TUTORIAL};
+    void boundary();
+    void objects_push_back(GameObject* obj);
+    void blit_surface(GameObject* obj);
+    virtual void create_scenario()=0;
+    //void list_to_list(std::list<GameObject*> list, std::list<GameObject*> otherlist);
+    //void save_Collisions(GameObject* obj);
+
+    SDL_Renderer* get_renderer();
+
+    void set_background(Background* background_);
+
 private:
-    bool left, right, up, down;
-    Player* player;
-    std::list<GameObject *> spawn;
-    std::list<GameObject *>::iterator iter, iter2;
-    std::list<Layer *> layers;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    Player* prota;
+    Background* background;
+    SDL_Surface* clean_surface;
+    std::list<GameObject*> objects;
+    std::list<GameObject*>::iterator iter;
 };
