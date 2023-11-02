@@ -1,8 +1,15 @@
 # Tutorial parte 4
+
 ## Actualizaciones
 
-* GameObject tiene un atributo "sprite" de tipo puntero SLD_Surface (Eliminado "skin" en Player).
-* GameObject init ahora incluye parámetro opcional "sur_" ("sprite"/surface).
-* Nueva clase Layer.
-* El método render pertenecerá a la clase Layer y se usará posteriormente en la clase Stage, con el fin de crear una única textura (Ambiente donde conviven los objetos e interactuan).
-* Parámetros width y height de GameObject opcionales, si su ancho y alto es igual a la imagen (surface/"sprite") utilizado simplemente omitir.
+* Motor refactorizado.
+
+* GameObject se encarga de centrar sprites y actualizar src_rect y dst_rect.
+* Toda la lógica de Init se a trasladado a constructores.
+* Nuevas clases Box, Layer, Stage y Stage0.
+* Stage representa el entorno (simulación) en el que los objetos interactúan entre sí. Por lo tanto, es quien se encarga de actualizar y renderizar desde el fondo, efectos, personajes y otros objetos.
+* Cambios en nombres de variables.
+* Cambios en el formato de nombres en variables y funciones (minúsculas y separados con _).
+* Gameobject cuenta con nuevas variables como on_air y orientation. La primera es un bool que representa si el objeto está en el aire o tocando el suelo y el segundo es utilizado para saber hacia donde mira el objeto.
+
+* Entre otros (ver video en youtube).
