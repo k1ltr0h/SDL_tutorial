@@ -99,8 +99,9 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 todo por medio de un plataformero 2D hecho en casa y por el amor al arte.</p>
 <p>Compilar proyecto con: <code>g++ -Wall *.cpp -o tutorial -lmingw32 -lSDL2main -lSDL2</code><br  />
 Agregar <code>-mwindows</code> para ocultar la consola.</p>
-<p>Generar Icono con: <code>windres my.rc -O coff -o my.res</code><br  />
+<p>Generar Icono con: <code>windres icon.rc -O coff -o icon.res</code><br  />
 Agregar <code>icon.res</code> al compilar para vincular icono al ejecutable.</p>
+<p><b>Ejemplo:</b> <code>g++ -Wall *.cpp -o tutorial -lmingw32 -lSDL2main -lSDL2 icon.res -mwindows</code></p>
 <ul>
 <li><a href="classGameObject.html">Clase principal</a></li>
 <li><a href="main_8cpp.html">Archivo principal</a></li>
@@ -112,7 +113,7 @@ Agregar <code>icon.res</code> al compilar para vincular icono al ejecutable.</p>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Nov 2 2023 03:30:45 for Tutorial4 SDL2 by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Sat Nov 4 2023 02:49:07 for Tutorial4 SDL2 by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

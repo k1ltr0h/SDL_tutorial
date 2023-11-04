@@ -9,8 +9,10 @@
  * Compilar proyecto con: `g++ -Wall *.cpp -o tutorial -lmingw32 -lSDL2main -lSDL2`\n
  * Agregar `-mwindows` para ocultar la consola.
  * 
- * Generar Icono con: `windres my.rc -O coff -o my.res`\n
+ * Generar Icono con: `windres icon.rc -O coff -o icon.res`\n
  * Agregar `icon.res` al compilar para vincular icono al ejecutable.
+ * 
+ * **Ejemplo:** `g++ -Wall *.cpp -o tutorial -lmingw32 -lSDL2main -lSDL2 icon.res -mwindows`
  * 
  * - [Clase principal](classGameObject.html)
  * - [Archivo principal](main_8cpp.html)

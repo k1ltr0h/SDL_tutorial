@@ -14,12 +14,12 @@ Vector2D::~Vector2D(){
 
 }
 
-void Vector2D::addVector(Vector2D vector){
+void Vector2D::add_vector(Vector2D vector){
     coord.x += vector.coord.x;
     coord.y += vector.coord.y;
 }
 
-void Vector2D::multVector(Vector2D vector){
+void Vector2D::mult_vector(Vector2D vector){
     coord.x *= vector.coord.x;
     coord.y *= vector.coord.y;
 }

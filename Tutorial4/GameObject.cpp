@@ -27,7 +27,6 @@ GameObject::GameObject(SDL_Surface* sur_, SDL_Rect rect_, Vector2D pos_, bool co
 }
 
 void GameObject::render(SDL_Renderer* renderer){
-    SDL_DestroyTexture(texture);
     set_texture(SDL_CreateTextureFromSurface(renderer, surface));
     SDL_RenderCopy(renderer, this->texture, &src_rect, &dst_rect);
 }
@@ -210,10 +209,12 @@ bool GameObject::get_on_air(){
 }
 
 void GameObject::set_surface(SDL_Surface* sur_){
+    SDL_FreeSurface(surface);
     surface = sur_;
 }
 
 void GameObject::set_texture(SDL_Texture* tex_){
+    SDL_DestroyTexture(texture);
     texture = tex_;
 }
 

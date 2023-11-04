@@ -5,5 +5,5 @@ var searchData=
   ['max_5fvel_5fx_2',['max_vel_x',['../classGameObject.html#a44efbb4016c4b037527ee250e785abe0',1,'GameObject']]],
   ['max_5fvel_5fy_3',['max_vel_y',['../classGameObject.html#a44be93c7d951ed34156df71d98acc6f2',1,'GameObject']]],
   ['move_4',['move',['../classGameObject.html#a674190acfc5948c88baed6f9ec9111df',1,'GameObject']]],
-  ['multvector_5',['multVector',['../classVector2D.html#aa087fb9cef60d804fd6e8d010cc77c50',1,'Vector2D']]]
+  ['mult_5fvector_5',['mult_vector',['../classVector2D.html#a6ab21d73470bcd6df68755e3f9b80a47',1,'Vector2D']]]
 ];

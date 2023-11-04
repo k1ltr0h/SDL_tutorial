@@ -113,7 +113,7 @@ $(document).ready(function(){initNavTree('Character_8cpp_source.html',''); initR
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
 <div class="foldopen" id="foldopen00011" data-start="{" data-end="}">
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="classCharacter.html#a95cf7b5c50efcabc7e8731a5958b53ca">   11</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="classCharacter.html#a95cf7b5c50efcabc7e8731a5958b53ca">Character::jump</a>(){</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    <a class="code hl_function" href="classGameObject.html#a4d66a4873d0c8305646663a23a5b37cb">get_current_acc</a>()-&gt;<a class="code hl_function" href="classVector2D.html#a42cd1aeb2398ad06aead54625a8d58f4">addVector</a>(<a class="code hl_class" href="classVector2D.html">Vector2D</a>(0, -60));</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    <a class="code hl_function" href="classGameObject.html#a4d66a4873d0c8305646663a23a5b37cb">get_current_acc</a>()-&gt;<a class="code hl_function" href="classVector2D.html#aa25341ab3bdaf5ac7cb94797d93f812a">add_vector</a>(<a class="code hl_class" href="classVector2D.html">Vector2D</a>(0, -60));</div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    <a class="code hl_function" href="classGameObject.html#a70d4d051e6cdd76c6f113de088efe2dd">set_on_air</a>(<span class="keyword">true</span>);</div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>}</div>
 </div>
@@ -136,17 +136,17 @@ $(document).ready(function(){initNavTree('Character_8cpp_source.html',''); initR
 <div class="ttc" id="aclassCharacter_html_aadeb5ccee25b2c265a5204821271bc86"><div class="ttname"><a href="classCharacter.html#aadeb5ccee25b2c265a5204821271bc86">Character::~Character</a></div><div class="ttdeci">virtual ~Character()=0</div><div class="ttdoc">Al ser el destructor virtual, siempre es llamado al destruir un objeto hijo.</div><div class="ttdef"><b>Definition</b> <a href="Character_8cpp_source.html#l00003">Character.cpp:3</a></div></div>
 <div class="ttc" id="aclassCharacter_html_af001e240f6be6247a75572f0a36651c7"><div class="ttname"><a href="classCharacter.html#af001e240f6be6247a75572f0a36651c7">Character::Character</a></div><div class="ttdeci">Character(SDL_Surface *sur_, SDL_Rect rect_, Vector2D pos_, bool collidable_=true, bool grav_activated_=true)</div><div class="ttdef"><b>Definition</b> <a href="Character_8cpp_source.html#l00005">Character.cpp:5</a></div></div>
 <div class="ttc" id="aclassGameObject_html"><div class="ttname"><a href="classGameObject.html">GameObject</a></div><div class="ttdef"><b>Definition</b> <a href="GameObject_8h_source.html#l00006">GameObject.h:6</a></div></div>
-<div class="ttc" id="aclassGameObject_html_a4d66a4873d0c8305646663a23a5b37cb"><div class="ttname"><a href="classGameObject.html#a4d66a4873d0c8305646663a23a5b37cb">GameObject::get_current_acc</a></div><div class="ttdeci">Vector2D * get_current_acc()</div><div class="ttdef"><b>Definition</b> <a href="GameObject_8cpp_source.html#l00180">GameObject.cpp:180</a></div></div>
-<div class="ttc" id="aclassGameObject_html_a70d4d051e6cdd76c6f113de088efe2dd"><div class="ttname"><a href="classGameObject.html#a70d4d051e6cdd76c6f113de088efe2dd">GameObject::set_on_air</a></div><div class="ttdeci">void set_on_air(bool on_air_)</div><div class="ttdef"><b>Definition</b> <a href="GameObject_8cpp_source.html#l00256">GameObject.cpp:256</a></div></div>
+<div class="ttc" id="aclassGameObject_html_a4d66a4873d0c8305646663a23a5b37cb"><div class="ttname"><a href="classGameObject.html#a4d66a4873d0c8305646663a23a5b37cb">GameObject::get_current_acc</a></div><div class="ttdeci">Vector2D * get_current_acc()</div><div class="ttdef"><b>Definition</b> <a href="GameObject_8cpp_source.html#l00179">GameObject.cpp:179</a></div></div>
+<div class="ttc" id="aclassGameObject_html_a70d4d051e6cdd76c6f113de088efe2dd"><div class="ttname"><a href="classGameObject.html#a70d4d051e6cdd76c6f113de088efe2dd">GameObject::set_on_air</a></div><div class="ttdeci">void set_on_air(bool on_air_)</div><div class="ttdef"><b>Definition</b> <a href="GameObject_8cpp_source.html#l00257">GameObject.cpp:257</a></div></div>
 <div class="ttc" id="aclassVector2D_html"><div class="ttname"><a href="classVector2D.html">Vector2D</a></div><div class="ttdef"><b>Definition</b> <a href="Vector2D_8h_source.html#l00001">Vector2D.h:1</a></div></div>
-<div class="ttc" id="aclassVector2D_html_a42cd1aeb2398ad06aead54625a8d58f4"><div class="ttname"><a href="classVector2D.html#a42cd1aeb2398ad06aead54625a8d58f4">Vector2D::addVector</a></div><div class="ttdeci">void addVector(Vector2D vector_)</div><div class="ttdef"><b>Definition</b> <a href="Vector2D_8cpp_source.html#l00017">Vector2D.cpp:17</a></div></div>
+<div class="ttc" id="aclassVector2D_html_aa25341ab3bdaf5ac7cb94797d93f812a"><div class="ttname"><a href="classVector2D.html#aa25341ab3bdaf5ac7cb94797d93f812a">Vector2D::add_vector</a></div><div class="ttdeci">void add_vector(Vector2D vector_)</div><div class="ttdef"><b>Definition</b> <a href="Vector2D_8cpp_source.html#l00017">Vector2D.cpp:17</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="Character_8cpp.html">Character.cpp</a></li>
-    <li class="footer">Generated on Thu Nov 2 2023 03:30:45 for Tutorial4 SDL2 by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Sat Nov 4 2023 02:49:07 for Tutorial4 SDL2 by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

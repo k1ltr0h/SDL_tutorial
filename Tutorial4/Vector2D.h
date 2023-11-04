@@ -9,8 +9,8 @@ public:
     Vector2D(int x_, int y_);
     ~Vector2D();
 
-    void addVector(Vector2D vector_);
-    void multVector(Vector2D vector_);
+    void add_vector(Vector2D vector_);
+    void mult_vector(Vector2D vector_);
 
     int get_x();
     int get_y();
