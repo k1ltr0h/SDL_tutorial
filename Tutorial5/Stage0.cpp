@@ -6,5 +6,7 @@ Stage(window_, prota_, new Background(window_, SDL_LoadBMP("../imgs/stage0.bmp")
 }
 
 void Stage0::create_scenario(){
-    objects_push_back(new Box(SDL_LoadBMP("../imgs/box.bmp"), Vector2D(400, 100)));
+    objects_push_back(new Box(SDL_LoadBMP("../imgs/box.bmp"), Vector2D(400, 200)));
+    objects_push_back(new Box(SDL_LoadBMP("../imgs/box.bmp"), Vector2D(600, 300)));
+    objects_push_back(new Box(SDL_LoadBMP("../imgs/box.bmp"), Vector2D(800, 400)));
 }

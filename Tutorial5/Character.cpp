@@ -5,7 +5,7 @@ Character::~Character(){}
 Character::Character(SDL_Surface* sur_, SDL_Rect rect_, Vector2D pos_,
 bool collidable_, bool grav_activated_):
 GameObject::GameObject(sur_, rect_, pos_, collidable_, grav_activated_){
-    
+    set_object_type(GameObject::type::NPC);
 }
 
 void Character::update(bool centered){
@@ -16,7 +16,8 @@ void Character::update(bool centered){
     int new_src_x = 0;
     bool need_flip = false;
 
-    //if(counter % 3 == 0){ // each 3 frames
+    // Draw sprite movement
+    if(counter % 3 == 0){ // each 3 frames
         if(vel->get_x() < 0){ // make the flip
             new_src_x = (src_rect->x + src_rect->w) % (get_surface_width() - src_rect->w);
             if(!get_horizontal_flip()){
@@ -42,7 +43,7 @@ void Character::update(bool centered){
 
         set_src_rect(new_src_x, src_rect->y, src_rect->w, src_rect->h);
         counter = 0;
-    //}
+    }
 
     //printf("%d-%d-%d\n", src_rect->x, (src_rect->x + src_rect->w), (src_rect->x + src_rect->w) % get_surface_width());
 

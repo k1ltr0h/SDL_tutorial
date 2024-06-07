@@ -14,15 +14,26 @@ GameObject::GameObject(SDL_Surface* sur_, SDL_Rect rect_, Vector2D pos_, bool co
     surface = sur_;
     //vertical_flip_surface = flip_surface(axis::ORDINATE);
     //horizontal_flip_surface = flip_surface(axis::ABSCISSA);
-
+    object_type = type::PLATFORM;
     depth = 10;
     pos = pos_;
+    prev_pos = pos_;
     vel = Vector2D();
-    acc = Vector2D(0, G);
+    if(grav_activated_){
+        acc = Vector2D(0, G);
+    }
+    else{
+        acc = Vector2D(0, 0);
+    }
     max_vel_x = 10, max_vel_y = 200;
 
     gravity_activated = grav_activated_;
     collidable = collidable_;
+
+    hit_box = {pos.get_x() - rect_.w/2, pos.get_x() + rect_.w/2,
+               pos.get_y() - rect_.h, pos.get_y()};
+
+    prev_hit_box = hit_box;
 
     src_rect = rect_;
     dst_rect = {pos.get_x(), pos.get_y(), rect_.w, rect_.h};
@@ -46,11 +57,15 @@ void GameObject::update(bool centered){
     // Player brakes, but only is updated if is not moving because velocity updates after move function is called.
     brake();
 
+    prev_hit_box = hit_box;
+
     if(centered){
         center();
     }
     else{
-        dst_rect = {pos.get_x(), pos.get_y(), surface_width, surface_height};
+        hit_box = {pos.get_x(), pos.get_x() + dst_rect.w,
+               pos.get_y(), pos.get_y() + dst_rect.h};
+        dst_rect = {pos.get_x(), pos.get_y(), dst_rect.w, dst_rect.h};
     }
 }
 
@@ -100,12 +115,12 @@ void GameObject::brake(){
         acc.set_x(0);
     }
     
-    if(curr_vel.y < 0){
+    if(gravity_activated)
         acc.set_y(G);
-    }
-    else if(curr_vel.y == 0 && pos.get_y() >= GROUND){
-        acc.set_y(0);
-    }
+
+    //else if(curr_vel.y == 0 && !this->on_air){
+    //    acc.set_y(0);
+    //}
 }
 
 void GameObject::ground(){ // Hard-coding for fake ground
@@ -122,8 +137,11 @@ void GameObject::ground(){ // Hard-coding for fake ground
 void GameObject::center(){
     int half_width = src_rect.w/2;
     int all_height = src_rect.h;
+
+    hit_box = {pos.get_x() - half_width, pos.get_x() + half_width,
+               pos.get_y() - all_height, pos.get_y()};
     
-    dst_rect = {pos.get_x() - half_width, pos.get_y() - all_height, surface_width, surface_height};
+    dst_rect = {pos.get_x() - half_width, pos.get_y() - all_height, dst_rect.w, dst_rect.h};
 }
 
 void GameObject::blit_surface(GameObject* obj){
@@ -175,7 +193,10 @@ void GameObject::flip_surface(bool axis){
 Vector2D GameObject::get_position(int t){
     int x = pos.get_x() + vel.get_x()*t + (acc.get_x()/2)*(t*t);
     int y = pos.get_y() + vel.get_y()*t + (acc.get_y()/2)*(t*t);
+
+    prev_pos.set_coord({pos.get_x(), pos.get_y()});
     pos.set_coord({x, y});
+
     return pos;
 }
 
@@ -222,6 +243,10 @@ Vector2D* GameObject::get_current_pos(){
     return &pos;
 }
 
+Vector2D* GameObject::get_prev_pos(){
+    return &prev_pos;
+}
+
 Vector2D* GameObject::get_current_vel(){
     return &vel;
 }
@@ -238,6 +263,14 @@ SDL_Rect* GameObject::get_dst_rect(){
     return &dst_rect;
 }
 
+GameObject::HitBox* GameObject::get_hit_box(){
+    return &hit_box;
+}
+
+GameObject::HitBox* GameObject::get_prev_hit_box(){
+    return &prev_hit_box;
+}
+
 int GameObject::get_surface_height(){
     return surface_height;
 }
@@ -250,8 +283,16 @@ unsigned int GameObject::get_depth(){
     return depth;
 }
 
+int GameObject::get_object_type(){
+    return object_type;
+}
+
 int GameObject::get_orientation(){
     return orientation;
+}
+
+bool GameObject::is_collidable(){
+    return collidable;
 }
 
 bool GameObject::get_on_air(){
@@ -266,6 +307,22 @@ bool GameObject::get_vertical_flip(){
     return vertical_flip;
 }
 
+bool GameObject::get_x_axis_collided_right(){
+    return x_axis_collided_right;
+}
+
+bool GameObject::get_x_axis_collided_left(){
+    return x_axis_collided_left;
+}
+
+bool GameObject::get_y_axis_collided_above(){
+    return y_axis_collided_above;
+}
+
+bool GameObject::get_y_axis_collided_below(){
+    return y_axis_collided_below;
+}
+
 void GameObject::set_surface(SDL_Surface* sur_){
     SDL_FreeSurface(surface);
     surface = sur_;
@@ -274,6 +331,18 @@ void GameObject::set_surface(SDL_Surface* sur_){
 void GameObject::set_texture(SDL_Texture* tex_){
     SDL_DestroyTexture(texture);
     texture = tex_;
+}
+
+void GameObject::set_current_pos(int x_, int y_){
+    pos.set_coord({x_, y_});
+}
+
+void GameObject::set_current_vel(int x_, int y_){
+    vel.set_coord({x_, y_});
+}
+
+void GameObject::set_current_acc(int x_, int y_){
+    acc.set_coord({x_, y_});
 }
 
 void GameObject::set_dst_rect(int x_, int y_, int w_, int h_){
@@ -321,4 +390,28 @@ void GameObject::set_horizontal_flip(bool horizontal_flip_){
 }
 void GameObject::set_vertical_flip(bool vertical_flip_){
     vertical_flip = vertical_flip_;
+}
+
+void GameObject::set_x_axis_collided_right(bool is_collide){
+    x_axis_collided_right = is_collide;
+}
+
+void GameObject::set_x_axis_collided_left(bool is_collide){
+    x_axis_collided_left = is_collide;
+}
+
+void GameObject::set_y_axis_collided_above(bool is_collide){
+    y_axis_collided_above = is_collide;
+}
+
+void GameObject::set_y_axis_collided_below(bool is_collide){
+    y_axis_collided_below = is_collide;
+}
+
+void GameObject::set_hit_box(HitBox* hit_box_){
+    hit_box = *hit_box_;
+}
+
+void GameObject::set_object_type(int type){
+    object_type = type;
 }
