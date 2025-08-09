@@ -5,7 +5,7 @@ Vector2D::Vector2D(){
     coord.y = 0;
 }
 
-Vector2D::Vector2D(int x_, int y_){
+Vector2D::Vector2D(float x_, float y_){
     coord.x = x_;
     coord.y = y_;
 }
@@ -24,11 +24,11 @@ void Vector2D::mult_vector(Vector2D vector){
     coord.y *= vector.coord.y;
 }
 
-int Vector2D::get_x(){
+float Vector2D::get_x() const{
     return coord.x;
 }
 
-int Vector2D::get_y(){
+float Vector2D::get_y() const{
     return coord.y;
 }
 
@@ -36,11 +36,11 @@ Vector2D::Coord Vector2D::get_coord(){
     return coord;
 }
 
-void Vector2D::set_x(int x_){
+void Vector2D::set_x(float x_){
     coord.x = x_;
 }
 
-void Vector2D::set_y(int y_){
+void Vector2D::set_y(float y_){
     coord.y = y_;
 }
 

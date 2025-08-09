@@ -26,8 +26,9 @@
 #include "Stage0.h"
 
 // Funciones
-Uint32 keyPressed(Uint32 interval, void* obj);
-Uint32 rendering(Uint32 interval, void* obj);
+void keyPressed(float dt);
+void phisics(float dt, Stage* playground);
+void graphics(Stage* playground);
 // Render
 SDL_Renderer* renderer = NULL;
 // Ventanas
@@ -39,8 +40,7 @@ bool endGame = false;
 // Imagenes
 SDL_Surface* player_img = NULL;
 // Variables
-SDL_TimerID phisics;
-SDL_TimerID graphics;
+SDL_Event e; ///< Eventos de SDL
 const Uint8 *keystate;
 Player* player = NULL;
 Stage* playground = NULL;
@@ -66,7 +66,8 @@ int main(int argc, char* args[]){
 	//SDL_Texture* tex =  SDL_CreateTextureFromSurface(renderer, sonic);
     //SDL_FreeSurface(sonic);
 
-    int delay = 1000/30;
+    int targetFps = 30;
+    int frameDelay = 1000 / targetFps;
 
     player = new Player(player_img, Vector2D(100, 100));
 
@@ -74,12 +75,17 @@ int main(int argc, char* args[]){
 
     renderer = playground->get_renderer();
 
-    phisics = SDL_AddTimer(delay, keyPressed, NULL);
-    graphics = SDL_AddTimer(delay, rendering, (void*)playground);
+    Uint32 lastTicks = SDL_GetTicks();
 
 	while(!endGame){
+        Uint32 now = SDL_GetTicks();
+        float dt = (now - lastTicks) / 1000.0f;  // dt en segundos
+        lastTicks = now;
+
 		//SDL_RenderPresent(renderer);
-        SDL_Event e;//recibo evento de la ventana
+        phisics(dt, playground);
+        graphics(playground);
+        
         if (SDL_PollEvent(&e)) {
             switch(e.type){
                 case SDL_QUIT:
@@ -112,6 +118,12 @@ int main(int argc, char* args[]){
                     break;
             };
 		}
+
+        // Espera lo necesario para mantener el frame rate
+        Uint32 frameTime = SDL_GetTicks() - now;
+        if (frameDelay > 0 && frameTime < (Uint32)frameDelay) {
+            SDL_Delay(frameDelay - frameTime);
+        }
 	}
 
     delete player;
@@ -120,7 +132,7 @@ int main(int argc, char* args[]){
     return 0;
 }
 // PhisicsEngine
-Uint32 keyPressed(Uint32 interval, void* obj){
+void keyPressed(float dt){
     keystate = SDL_GetKeyboardState(NULL);
     //Vector2D* acc = player->get_current_acc();
     //Vector2D* pos = player->get_current_pos();
@@ -160,21 +172,19 @@ Uint32 keyPressed(Uint32 interval, void* obj){
         player->jump();
         //acc->setY(15); // va a volar, REVISAR!!!
     }
-
-    //player->set_y(y);
-    //player->set_x(x);
-    //player->set_vel_y(vel_y);
-
-    //player->update();
-
-    return interval;
 }
+
+void phisics(float dt, Stage* playground){
+    keyPressed(dt);
+    // Actualizar la posición de los objetos en el escenario
+    playground->update(dt);
+}
+
 // GraphicsEngine
-Uint32 rendering(Uint32 interval, void* obj){
-    ((Stage*)obj)->render();
+void graphics(Stage* playground){
+    playground->render();
 
     SDL_RenderPresent(renderer);
 	SDL_RenderClear(renderer);
 
-    return interval;
 }

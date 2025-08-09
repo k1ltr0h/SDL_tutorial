@@ -7,7 +7,7 @@ public:
     virtual ~Character() = 0; ///< Al ser el destructor virtual, siempre es llamado al destruir un objeto hijo
     
     //void render(SDL_Renderer* renderer)=0;
-    virtual void update(bool centered=true);
+    virtual void update(float dt, const std::vector<GameObject*>& allObjects, bool centered=true);
     virtual void jump();
     virtual void attack();
     virtual void talk();

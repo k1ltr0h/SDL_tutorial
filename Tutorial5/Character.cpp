@@ -8,30 +8,30 @@ GameObject::GameObject(sur_, rect_, pos_, collidable_, grav_activated_){
     set_object_type(GameObject::type::NPC);
 }
 
-void Character::update(bool centered){
-    GameObject::update(centered);
+void Character::update(float dt, const std::vector<GameObject*>& allObjects, bool centered){
+    GameObject::update(dt, allObjects, centered);
 
-    SDL_Rect* src_rect = get_src_rect();
-    Vector2D* vel =  get_current_vel();
+    SDL_Rect src_rect = get_src_rect();
+    Vector2D vel =  get_velocity();
     int new_src_x = 0;
     bool need_flip = false;
 
     // Draw sprite movement
     if(counter % 3 == 0){ // each 3 frames
-        if(vel->get_x() < 0){ // make the flip
-            new_src_x = (src_rect->x + src_rect->w) % (get_surface_width() - src_rect->w);
+        if(vel.get_x() < 0){ // make the flip
+            new_src_x = (src_rect.x + src_rect.w) % (get_surface_width() - src_rect.w);
             if(!get_horizontal_flip()){
                 need_flip = true;
             }
         }
-        else if(vel->get_x() > 0){
-            new_src_x =  src_rect->w + (src_rect->x % (get_surface_width() - src_rect->w));
+        else if(vel.get_x() > 0){
+            new_src_x =  src_rect.w + (src_rect.x % (get_surface_width() - src_rect.w));
             if(get_horizontal_flip()){
                 need_flip = true;
             }
         }
         else if(get_horizontal_flip()){
-            new_src_x = get_surface_width() - src_rect->w;
+            new_src_x = get_surface_width() - src_rect.w;
         }
 
         //printf("%d-%d\n", get_orientation(), counter);
@@ -41,7 +41,7 @@ void Character::update(bool centered){
             set_horizontal_flip(!get_horizontal_flip());
         }
 
-        set_src_rect(new_src_x, src_rect->y, src_rect->w, src_rect->h);
+        set_src_rect(new_src_x, src_rect.y, src_rect.w, src_rect.h);
         counter = 0;
     }
 
@@ -52,8 +52,13 @@ void Character::update(bool centered){
 }
 
 void Character::jump(){
-    get_current_acc()->add_vector(Vector2D(0, -60));
+    
+    //get_acceleration().set_y(-20000); Salto varía según valor de dt
+    get_velocity().set_y(-700); // Salto no varía según valor de dt
+
     set_on_air(true);
+
+    printf("SALTO: vel.y = %f\n", get_velocity().get_y());
 }
 
 void Character::attack(){
