@@ -1,6 +1,6 @@
 #include "GameObject.h"
 
-#define G 10 ///< Aceleración de Gravedad: positivo porque 'y' crece hacia abajo en la pantalla.
+#define G 100 ///< Aceleración de Gravedad: positivo porque 'y' crece hacia abajo en la pantalla.
 #define GROUND 450
 
 GameObject::~GameObject(){
