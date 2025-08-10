@@ -183,48 +183,61 @@ void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& al
 
 bool GameObject::swept_aabb(const GameObject& obstacle,
                             float dx, float dy,
-                            float& impact_fraction_other, int& impact_axis_other) const{
+                            float& impact_fraction, int& impact_axis) const
+{
     const Hitbox& a = this->get_hit_box();
     const Hitbox& b = obstacle.get_hit_box();
 
-    float tx_entry, tx_exit;
-    float ty_entry, ty_exit;
+    // Origen del rayo = centro de A
+    const float center_x = a.center.get_x();
+    const float center_y = a.center.get_y();
 
-    if (dx > 0.0f) {
-        tx_entry = (b.left() - a.right()) / dx;
-        tx_exit  = (b.right() - a.left()) / dx;
-    } else if (dx < 0.0f) {
-        tx_entry = (b.right() - a.left()) / dx;
-        tx_exit  = (b.left() - a.right()) / dx;
-    } else {
-        tx_entry = -std::numeric_limits<float>::infinity();
-        tx_exit  =  std::numeric_limits<float>::infinity();
-    }
+    // AABB expandido = B ± (halfA + halfB)
+    const float half_sum_w = 0.5f * (a.width  + b.width);
+    const float half_sum_h = 0.5f * (a.height + b.height);
 
-    if (dy > 0.0f) {
-        ty_entry = (b.top() - a.bottom()) / dy;
-        ty_exit  = (b.bottom() - a.top()) / dy;
-    } else if (dy < 0.0f) {
-        ty_entry = (b.bottom() - a.top()) / dy;
-        ty_exit  = (b.top() - a.bottom()) / dy;
-    } else {
-        ty_entry = -std::numeric_limits<float>::infinity();
-        ty_exit  =  std::numeric_limits<float>::infinity();
-    }
+    // Definir los límites de B
+    // B = (bx_min, by_min) a (bx_max, by_max)
+    const float bx_min = b.center.get_x() - half_sum_w;
+    const float bx_max = b.center.get_x() + half_sum_w;
+    const float by_min = b.center.get_y() - half_sum_h;
+    const float by_max = b.center.get_y() + half_sum_h;
 
-    float t_entry = std::max(tx_entry, ty_entry);
-    float t_exit  = std::min(tx_exit, ty_exit);
+    // Función labmda para evitar división por cero
+    // y devolver infinito si el denominador es cero
+    float (*safe_inverse)(float) = [](float v) -> float {
+        const float eps = 1e-8f;
+        return (std::fabs(v) < eps) ? std::numeric_limits<float>::infinity() : 1.0f / v;
+    };
+
+    const float inv_dx = safe_inverse(dx);
+    const float inv_dy = safe_inverse(dy);
+
+    // Calcular tiempos de entrada y salida en X e Y
+    float tx_entry = (bx_min - center_x) * inv_dx;
+    float tx_exit = (bx_max - center_x) * inv_dx;
+    float ty_entry = (by_min - center_y) * inv_dy;
+    float ty_exit = (by_max - center_y) * inv_dy;
+
+    // Asegurar que tx_entry < tx_exit y ty_entry < ty_exit
+    float tmin_x = std::min(tx_entry, tx_exit);
+    float tmax_x = std::max(tx_entry, tx_exit);
+    float tmin_y = std::min(ty_entry, ty_exit);
+    float tmax_y = std::max(ty_entry, ty_exit);
+
+    // Tiempos de entrada y salida de colisión
+    float t_entry = std::max(tmin_x, tmin_y);
+    float t_exit  = std::min(tmax_x, tmax_y);
 
     // Comprueba que el tiempo de entrada sea válido
     // y que no haya salida antes de entrar
     if (t_entry < 0.0f || t_entry > 1.0f || t_entry > t_exit)
         return false;
 
-    impact_fraction_other = t_entry;
-    // t_entry mayor representa el eje de colisión
-    // 0 = X, 1 = Y
-    impact_axis_other = (tx_entry > ty_entry ? 0 : 1);
-
+    impact_fraction = t_entry;
+    // Eje del impacto según qué “slab” gobierna la entrada
+    impact_axis = (tmin_x > tmin_y) ? 0 : 1; // 0 = X, 1 = Y
+    
     return true;
 }
 
