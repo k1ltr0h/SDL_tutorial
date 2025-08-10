@@ -5,6 +5,7 @@
 #include <limits>      // std::numeric_limits
 #include <vector>
 #include <cmath>
+#include "GameConfig.h"
 #include "Vector2D.h"
 
 class GameObject{
@@ -358,6 +359,39 @@ public:
         return vertical_flip;
     }
 
+    /**
+     * @brief Obtiene la velocidad máxima en el eje X.
+     * @return Valor entero con la velocidad máxima horizontal (px/s).
+     */
+    int get_max_vel_x() const {
+        return max_vel_x;
+    }
+
+    /**
+     * @brief Obtiene la velocidad máxima en el eje Y.
+     * @return Valor entero con la velocidad máxima vertical (px/s).
+     */
+    int get_max_vel_y() const {
+        return max_vel_y;
+    }
+
+    /**
+     * @brief Obtiene la dirección de movimiento horizontal.
+     * @return 0 = parado, +1 = derecha, -1 = izquierda.
+     */
+    int get_move_dir_x() const {
+        return move_dir_x;
+    }
+
+    /**
+     * @brief Obtiene la dirección de movimiento vertical.
+     * @return 0 = parado, +1 = abajo, -1 = arriba.
+     * Util para juegos con vista cenital o con profundidad.
+     */
+    int get_move_dir_y() const {
+        return move_dir_y;
+    }
+
 
     // ——— Setters ———————————————————————————————————————————
 
@@ -501,6 +535,39 @@ public:
     }
 
     /**
+     * @brief Establece la velocidad máxima en el eje X.
+     * @param max_vel_x_ Valor entero con la nueva velocidad máxima (px/s).
+     */
+    void set_max_vel_x(int max_vel_x_){
+        max_vel_x = max_vel_x_;
+    }
+
+    /**
+     * @brief Establece la velocidad máxima en el eje Y.
+     * @param max_vel_y_ Valor entero con la nueva velocidad máxima (px/s).
+     */
+    void set_max_vel_y(int max_vel_y_){
+        max_vel_y = max_vel_y_;
+    }
+
+    /**
+     * @brief Establece la dirección de movimiento horizontal.
+     * @param move_dir_x_ 0 = parado, +1 = derecha, -1 = izquierda.
+     */
+    void set_move_dir_x(int move_dir_x_){
+        move_dir_x = move_dir_x_;
+    }
+
+    /**
+     * @brief Establece la dirección de movimiento vertical.
+     * @param move_dir_y_ 0 = parado, +1 = abajo, -1 = arriba.
+     * Util para juegos con vista cenital o con profundidad.
+     */
+    void set_move_dir_y(int move_dir_y_){
+        move_dir_y = move_dir_y_;
+    }
+
+    /**
      * @brief Establece una hit-box personalizada.
      * @param hitbox_ Referencia constante al SDL_Rect que define la nueva caja.
      */
@@ -519,6 +586,8 @@ public:
 
 
 private:
+    // ——— Atributos ———————————————————————————————————————————
+
     /// Rectángulo fuente dentro de la superficie SDL (x, y, w, h).
     SDL_Rect src_rect;
 
@@ -566,6 +635,15 @@ private:
 
     /// Velocidad máxima permitida en Y (px/s).
     int max_vel_y;
+
+    /// Dirección de movimiento horizontal (0 = parado).
+    /// 0 = parado, +1 = derecha, -1 = izquierda.
+    int move_dir_x = 0;
+
+    /// Dirección de movimiento vertical (0 = parado).
+    /// Util para juegos con vista cenital o con profundidad o nado.
+    /// 0 = parado, +1 = abajo, -1 = arriba.
+    int move_dir_y = 0;
 
     /// Anchura de la superficie original (px).
     int surface_width;

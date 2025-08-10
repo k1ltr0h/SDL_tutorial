@@ -1,6 +1,5 @@
 #include "GameObject.h"
 
-#define G 2000 ///< Aceleración de Gravedad: positivo porque 'y' crece hacia abajo en la pantalla.
 #define GROUND 450
 
 GameObject::~GameObject(){
@@ -18,12 +17,13 @@ GameObject::GameObject(SDL_Surface* sur_,
     surface = sur_;
     //vertical_flip_surface = flip_surface(axis::ORDINATE);
     //horizontal_flip_surface = flip_surface(axis::ABSCISSA);
+
     object_type = type::PLATFORM;
     depth = 10;
     pos = pos_;
     vel = Vector2D();
     if(grav_activated_){
-        acc = Vector2D(0, G);
+        acc = Vector2D(0, config.get_gravity()); // gravedad por defecto
     }
     else{
         acc = Vector2D(0, 0);
@@ -67,173 +67,171 @@ void GameObject::render(SDL_Renderer* renderer){
     SDL_RenderCopy(renderer, this->texture, &src_rect, &dst_rect);
 }
 
-void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& allObjects){
+void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& all_objects){
     // 1) Predicción completa
-    Vector2D posNext = predict_position(dt);
-    Vector2D velNext = predict_velocity(dt);
+    Vector2D pos_next = predict_position(dt);
+    Vector2D vel_next = predict_velocity(dt);
 
     // 2) Desplazamiento del frame
-    float dx = posNext.get_x() - pos.get_x();
-    float dy = posNext.get_y() - pos.get_y();
+    float dx = pos_next.get_x() - pos.get_x();
+    float dy = pos_next.get_y() - pos.get_y();
 
     // 3) Broad-phase (usar centros de hitbox)
-    Hitbox A = get_hit_box();                // centro actual
-    float currentCenterX = A.center.get_x();
-    float currentCenterY = A.center.get_y();
+    Hitbox a = get_hit_box();                // centro actual
+    float current_center_x = a.center.get_x();
+    float current_center_y = a.center.get_y();
 
-    float nextCenterX = posNext.get_x();
-    float nextCenterY = posNext.get_y() - dst_rect.h * 0.5f;
+    float next_center_x = pos_next.get_x();
+    float next_center_y = pos_next.get_y() - dst_rect.h * 0.5f;
 
     // calcular los límites de búsqueda
-    float minX = std::min(currentCenterX, nextCenterX) - A.width  * 0.5f;
-    float maxX = std::max(currentCenterX, nextCenterX) + A.width  * 0.5f;
-    float minY = std::min(currentCenterY, nextCenterY) - A.height * 0.5f;
-    float maxY = std::max(currentCenterY, nextCenterY) + A.height * 0.5f;
+    float min_x = std::min(current_center_x, next_center_x) - a.width  * 0.5f;
+    float max_x = std::max(current_center_x, next_center_x) + a.width  * 0.5f;
+    float min_y = std::min(current_center_y, next_center_y) - a.height * 0.5f;
+    float max_y = std::max(current_center_y, next_center_y) + a.height * 0.5f;
 
-    float impactTime = 1.0f;
-    int   hitAxis     = -1;   // 0=X, 1=Y
-    const GameObject* hitTarget = nullptr;
+    float impact_fraction = 1.0f;
+    int impact_axis = -1;   // 0=X, 1=Y
+    const GameObject* impact_target = nullptr;
 
-    for (const GameObject* other : allObjects) {
+    for (const GameObject* other : all_objects) {
         if (other == this || !other->is_collidable()) continue;
 
-        Hitbox B = other->get_hit_box();
+        Hitbox b = other->get_hit_box();
         // Broad-phase: descartar rápido
-        if (B.right()  < minX || B.left() > maxX ||
-            B.bottom() < minY || B.top()  > maxY)
+        if (b.right()  < min_x || b.left() > max_x ||
+            b.bottom() < min_y || b.top()  > max_y)
             continue;
 
-        float impactTimeOther; 
-        int impactAxisOther;
+        float impact_fraction_other; 
+        int impact_axis_other;
         // 4) Narrow-phase: swept AABB
-        if (swept_aabb(*other, dx, dy, impactTimeOther, impactAxisOther) && impactTimeOther < impactTime) {
-            impactTime = impactTimeOther;
-            hitAxis     = impactAxisOther;
-            hitTarget   = other;
+        if (swept_aabb(*other, dx, dy, impact_fraction_other, impact_axis_other) && impact_fraction_other < impact_fraction) {
+            impact_fraction = impact_fraction_other;
+            impact_axis     = impact_axis_other;
+            impact_target   = other;
         }
     }
 
-    // 5) Resolver
-    if (hitTarget) {
-        const float EPS = 1.0f; // pega 1px por fuera
+    // 5) Recalcular pocisión
+    //    Ahora tenemos el objeto de impacto y el tiempo más cercano de colisión
+    if (impact_target) {
+        const float EPS = config.get_eps(); // pega 1px por fuera
 
-        float timeToCollision = impactTime * dt;
-        float remDT = dt - timeToCollision;
+        // Calcular el tiempo de impacto y el tiempo restante
+        float time_to_collision = impact_fraction * dt;
+        float remaining_t = dt - time_to_collision;
 
         // Avanza hasta el instante exacto del impacto
-        pos = predict_position(timeToCollision);
+        update_position(time_to_collision);
+        update_velocity(time_to_collision);
         // Releer hitboxes con pos en el tiempo de impacto
-        Hitbox Ah = get_hit_box();
-        Hitbox Bh = hitTarget->get_hit_box();
+        Hitbox a_hitbox = get_hit_box();
+        Hitbox b_hitbox = impact_target->get_hit_box();
+
+        const float vel_x = vel.get_x();
+        const float vel_y = vel.get_y();
+        const float acc_x = acc.get_x();
+        const float acc_y = acc.get_y();
 
         // Snap y bloqueo de eje
-        if (hitAxis == 0) {
-            const float EPS = 1.0f;
-            Hitbox Ah = get_hit_box();
-            Hitbox Bh = hitTarget->get_hit_box();
-
+        if (impact_axis == 0) {
             if (dx > 0.0f) {
                 // venía de izquierda → encaja a la izquierda del obstáculo
-                pos.set_x(Bh.left() - Ah.width / 2.0f - EPS);
+                pos.set_x(b_hitbox.left() - a_hitbox.width / 2.0f - EPS);
+                
             } else {
                 // venía de derecha → encaja a la derecha del obstáculo
-                pos.set_x(Bh.right() + Ah.width / 2.0f + EPS);
+                pos.set_x(b_hitbox.right() + a_hitbox.width / 2.0f + EPS);
             }
-            // anula X y consume remDT solo en Y
-            const float ay = acc.get_y();
-            const float vy = vel.get_y();
+            // Consume remainingT solo en Y
+            printf("Collision on X axis: pos.x = %f\n", pos.get_x());
             vel.set_x(0.0f);
-            acc.set_x(0.0f);
-            pos.set_y(pos.get_y() + vy * remDT + 0.5f * ay * remDT * remDT);
-            vel.set_y(vy + ay * remDT);
+            printf("Velocidad X: %.2f\n Acc X: %.2f\n", vel_x, acc_x);
+            pos.set_y(pos.get_y() + vel_y * remaining_t + 0.5f * acc_y * remaining_t * remaining_t);
+            vel.set_y(vel_y + acc_y * remaining_t);
         } else {
-            // Tiempo hasta colisión y tiempo restante ya calculados
-            // pos = predict_position(timeToCollision);  // ya hecho antes
-            Hitbox Ah = get_hit_box();
-            Hitbox Bh = hitTarget->get_hit_box();
-
             // OJO: pos.y es bottom-center del jugador
             if (dy > 0.0f) {
                 // Caía desde arriba: deja el bottom justo encima del top del obstáculo
-                pos.set_y(Bh.top() - EPS);
+                pos.set_y(b_hitbox.top() - EPS);
                 set_on_air(false);
                 // anula solo el movimiento vertical restante
                 vel.set_y(0.0f);
                 acc.set_y(0.0f);         // evita re-penetrar en el remDT
                 // consume remDT solo en X
-                const float ax = acc.get_x();
-                const float vx = vel.get_x();
-                pos.set_x(pos.get_x() + vx * remDT + 0.5f * ax * remDT * remDT);
-                vel.set_x(vx + ax * remDT);
+                pos.set_x(pos.get_x() + vel_x * remaining_t + 0.5f * acc_x * remaining_t * remaining_t);
+                vel.set_x(vel_x + acc_x * remaining_t);
             } else {
                 // Venía desde abajo: deja el top justo debajo del bottom del obstáculo
                 // top del jugador = pos.y - Ah.height  ⇒ pos.y = Bh.bottom() + Ah.height + EPS
-                pos.set_y(Bh.bottom() + Ah.height + EPS);
+                pos.set_y(b_hitbox.bottom() + a_hitbox.height + EPS);
                 // anula solo el vertical
                 vel.set_y(0.0f);
                 acc.set_y(0.0f);
                 // consume remDT solo en X
-                const float ax = acc.get_x();
-                const float vx = vel.get_x();
-                pos.set_x(pos.get_x() + vx * remDT + 0.5f * ax * remDT * remDT);
-                vel.set_x(vx + ax * remDT);
+                pos.set_x(pos.get_x() + vel_x * remaining_t + 0.5f * acc_x * remaining_t * remaining_t);
+                vel.set_x(vel_x + acc_x * remaining_t);
             }
         }
     } else {
         // Sin colisión: aplica predicción completa
-        pos = posNext;
-        vel = velNext;
+        pos = pos_next;
+        vel = vel_next;
     }
 }
 
 bool GameObject::swept_aabb(const GameObject& obstacle,
                             float dx, float dy,
-                            float& outT, int& outAxis) const{
-    const Hitbox& A = this->get_hit_box();
-    const Hitbox& B = obstacle.get_hit_box();
+                            float& impact_fraction_other, int& impact_axis_other) const{
+    const Hitbox& a = this->get_hit_box();
+    const Hitbox& b = obstacle.get_hit_box();
 
-    float txEntry, txExit;
-    float tyEntry, tyExit;
+    float tx_entry, tx_exit;
+    float ty_entry, ty_exit;
 
     if (dx > 0.0f) {
-        txEntry = (B.left() - A.right()) / dx;
-        txExit  = (B.right() - A.left()) / dx;
+        tx_entry = (b.left() - a.right()) / dx;
+        tx_exit  = (b.right() - a.left()) / dx;
     } else if (dx < 0.0f) {
-        txEntry = (B.right() - A.left()) / dx;
-        txExit  = (B.left() - A.right()) / dx;
+        tx_entry = (b.right() - a.left()) / dx;
+        tx_exit  = (b.left() - a.right()) / dx;
     } else {
-        txEntry = -std::numeric_limits<float>::infinity();
-        txExit  =  std::numeric_limits<float>::infinity();
+        tx_entry = -std::numeric_limits<float>::infinity();
+        tx_exit  =  std::numeric_limits<float>::infinity();
     }
 
     if (dy > 0.0f) {
-        tyEntry = (B.top() - A.bottom()) / dy;
-        tyExit  = (B.bottom() - A.top()) / dy;
+        ty_entry = (b.top() - a.bottom()) / dy;
+        ty_exit  = (b.bottom() - a.top()) / dy;
     } else if (dy < 0.0f) {
-        tyEntry = (B.bottom() - A.top()) / dy;
-        tyExit  = (B.top() - A.bottom()) / dy;
+        ty_entry = (b.bottom() - a.top()) / dy;
+        ty_exit  = (b.top() - a.bottom()) / dy;
     } else {
-        tyEntry = -std::numeric_limits<float>::infinity();
-        tyExit  =  std::numeric_limits<float>::infinity();
+        ty_entry = -std::numeric_limits<float>::infinity();
+        ty_exit  =  std::numeric_limits<float>::infinity();
     }
 
-    float tEntry = std::max(txEntry, tyEntry);
-    float tExit  = std::min(txExit, tyExit);
+    float t_entry = std::max(tx_entry, ty_entry);
+    float t_exit  = std::min(tx_exit, ty_exit);
 
-    // Comprueba que se esté dentro del objeto.
-    if (tEntry < 0.0f || tEntry > 1.0f || tEntry > tExit)
+    // Comprueba que el tiempo de entrada sea válido
+    // y que no haya salida antes de entrar
+    if (t_entry < 0.0f || t_entry > 1.0f || t_entry > t_exit)
         return false;
 
-    outT = tEntry;
-    outAxis = (txEntry > tyEntry ? 0 : 1);
+    impact_fraction_other = t_entry;
+    // t_entry mayor representa el eje de colisión
+    // 0 = X, 1 = Y
+    impact_axis_other = (tx_entry > ty_entry ? 0 : 1);
 
     return true;
 }
 
 void GameObject::update(float dt,
-                        const std::vector<GameObject*>& allObjects,
+                        const std::vector<GameObject*>& all_objects,
                         bool centered){
-    resolve_collisions(dt, allObjects);
+    resolve_collisions(dt, all_objects);
 
     // 6) Resto de física “global”
     ground();
@@ -262,8 +260,14 @@ void GameObject::move(int dir){
     constexpr float MOVE_ACCEL = 500.0f;
 
     switch(dir){
-        case dir::RIGHT: acc.set_x(+MOVE_ACCEL); break;
-        case dir::LEFT:  acc.set_x(-MOVE_ACCEL); break;
+        case dir::RIGHT: 
+            acc.set_x(+MOVE_ACCEL);
+            move_dir_x = 1;
+            break;
+        case dir::LEFT:  
+            acc.set_x(-MOVE_ACCEL); 
+            move_dir_x = -1;
+            break;
         case dir::UP:    acc.set_y(-MOVE_ACCEL); break;
         case dir::DOWN:  acc.set_y(+MOVE_ACCEL); break;
         default: break;
@@ -286,11 +290,11 @@ void GameObject::brake() {
     const float BRAKE_ACCEL     = 500.0f;  ///< desaceleración por fricción
     const float BRAKE_THRESHOLD = 10.0f;   ///< si |vx| < umbral, consideramos detenido
 
-    float vx = vel.get_x();
+    float vel_x = vel.get_x();
 
-    if (std::abs(vx) > BRAKE_THRESHOLD) {
+    if (std::abs(vel_x) > BRAKE_THRESHOLD) {
         // Aplica aceleración contraria al movimiento
-        acc.set_x(vx > 0.0f ? -BRAKE_ACCEL : BRAKE_ACCEL);
+        acc.set_x(vel_x > 0.0f ? -BRAKE_ACCEL : BRAKE_ACCEL);
     } else {
         // Velocidad suficientemente baja → parar
         vel.set_x(0.0f);
@@ -298,7 +302,7 @@ void GameObject::brake() {
     }
 
     // Gravedad vertical siempre (o cero si no activada)
-    acc.set_y(gravity_activated ? G : 0.0f);
+    acc.set_y(gravity_activated ? config.get_gravity() : 0.0f);
 }
 
 void GameObject::ground(){ // Hard-coding for fake ground
@@ -315,7 +319,6 @@ void GameObject::ground(){ // Hard-coding for fake ground
 
 void GameObject::center(){
     int half_width = src_rect.w/2;
-    int half_height = src_rect.h/2;
     int all_height = src_rect.h;
     
     dst_rect = {int(pos.get_x() - half_width), int(pos.get_y() - all_height), dst_rect.w, dst_rect.h};

@@ -22,6 +22,7 @@
 
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include "GameConfig.h"
 #include "Player.h"
 #include "Stage0.h"
 
@@ -66,8 +67,7 @@ int main(int argc, char* args[]){
 	//SDL_Texture* tex =  SDL_CreateTextureFromSurface(renderer, sonic);
     //SDL_FreeSurface(sonic);
 
-    int targetFps = 30;
-    int frameDelay = 1000 / targetFps;
+    int frameDelay = 1000 / config.get_targetFPS();
 
     player = new Player(player_img, Vector2D(100, 100));
 
@@ -175,6 +175,9 @@ void keyPressed(float dt){
 }
 
 void phisics(float dt, Stage* playground){
+    if(player->get_velocity().get_x() == 0)
+        player->set_move_dir_x(0);
+
     keyPressed(dt);
     // Actualizar la posición de los objetos en el escenario
     playground->update(dt);
