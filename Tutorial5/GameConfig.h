@@ -11,8 +11,8 @@ public:
     float get_gravity() const { return gravity_; }
     float get_eps() const { return eps_; }
     int get_targetFPS() const { return target_fps_; }
-    int get_framesPerSprite() const { return frames_per_sprite_; }
-    int get_animStepsPerSec() const { return anim_steps_per_sec_; }
+    int get_frames_per_sprite() const { return frames_per_sprite_; }
+    int get_anim_steps_per_sec() const { return anim_steps_per_sec_; }
 
     void set_gravity(float g) { gravity_ = g; }
     void set_eps(float e) { eps_ = e; }

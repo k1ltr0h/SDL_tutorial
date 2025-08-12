@@ -46,7 +46,7 @@ void GameObject::render(SDL_Renderer* renderer){
     if (!texture) {
         texture = SDL_CreateTexture(
             renderer,
-            surface->format->format,
+            surface->format->format, // SDL_PIXELFORMAT_BGR24
             SDL_TEXTUREACCESS_STREAMING,
             surface->w,
             surface->h
@@ -145,9 +145,7 @@ void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& al
                 pos.set_x(b_hitbox.right() + a_hitbox.width / 2.0f + EPS);
             }
             // Consume remainingT solo en Y
-            printf("Collision on X axis: pos.x = %f\n", pos.get_x());
-            vel.set_x(0.0f);
-            printf("Velocidad X: %.2f\n Acc X: %.2f\n", vel_x, acc_x);
+            stop(axis::ABSCISSA);
             pos.set_y(pos.get_y() + vel_y * remaining_t + 0.5f * acc_y * remaining_t * remaining_t);
             vel.set_y(vel_y + acc_y * remaining_t);
         } else {
@@ -156,23 +154,15 @@ void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& al
                 // Caía desde arriba: deja el bottom justo encima del top del obstáculo
                 pos.set_y(b_hitbox.top() - EPS);
                 set_on_air(false);
-                // anula solo el movimiento vertical restante
-                vel.set_y(0.0f);
-                acc.set_y(0.0f);         // evita re-penetrar en el remDT
-                // consume remDT solo en X
-                pos.set_x(pos.get_x() + vel_x * remaining_t + 0.5f * acc_x * remaining_t * remaining_t);
-                vel.set_x(vel_x + acc_x * remaining_t);
             } else {
                 // Venía desde abajo: deja el top justo debajo del bottom del obstáculo
                 // top del jugador = pos.y - Ah.height  ⇒ pos.y = Bh.bottom() + Ah.height + EPS
                 pos.set_y(b_hitbox.bottom() + a_hitbox.height + EPS);
-                // anula solo el vertical
-                vel.set_y(0.0f);
-                acc.set_y(0.0f);
-                // consume remDT solo en X
-                pos.set_x(pos.get_x() + vel_x * remaining_t + 0.5f * acc_x * remaining_t * remaining_t);
-                vel.set_x(vel_x + acc_x * remaining_t);
             }
+            // anula solo el movimiento vertical restante
+            stop(axis::ORDINATE);
+            pos.set_x(pos.get_x() + vel_x * remaining_t + 0.5f * acc_x * remaining_t * remaining_t);
+            vel.set_x(vel_x + acc_x * remaining_t);
         }
     } else {
         // Sin colisión: aplica predicción completa
@@ -237,7 +227,7 @@ bool GameObject::swept_aabb(const GameObject& obstacle,
     impact_fraction = t_entry;
     // Eje del impacto según qué “slab” gobierna la entrada
     impact_axis = (tmin_x > tmin_y) ? 0 : 1; // 0 = X, 1 = Y
-    
+
     return true;
 }
 
@@ -345,47 +335,54 @@ void GameObject::blit_surface(GameObject* obj){
 }
 
 void GameObject::flip_surface(axis axis){
-    SDL_LockSurface(surface);
+    SDL_LockSurface(surface); // bloquea la superficie para acceso seguro
 
-    int pitch = surface->pitch; // row size
-    char* temp = new char[pitch]; // intermediate buffer
-    char* pixels = (char*) surface->pixels;
+    int pitch = surface->pitch; // bytes por fila
+    int effective_width = surface->w * surface->format->BytesPerPixel;
+    unsigned char* temp = new unsigned char[effective_width]; // buffer temporal
+    unsigned char* pixels = (unsigned char*) surface->pixels; // píxeles de la superficie
 
     if(axis == axis::ABSCISSA){
-       for(int i=0; i < surface->h; ++i){
-            // get pointers to the two rows to swap
-            char* row = pixels + i * pitch;
+        // Ancho efectivo de la superficie
+        // (BytesPerPixel * ancho de la superficie)
+        for(int i=0; i < surface->h; ++i){
+            // copia una fila de píxeles a un buffer temporal
+            // y luego invierte los colores de esa fila
+            unsigned char* row = pixels + i * pitch;
             memcpy(temp, row, pitch);
-            // RGB to BGR
-            for(int iter=0; iter < pitch; iter+=3){
-                pixels[iter + i*pitch] = temp[pitch - iter - 3];
-                pixels[iter + 1 + i*pitch] = temp[pitch - iter - 2];
-                pixels[iter + 2 + i*pitch] = temp[pitch - iter - 1];
+            // invierte la fila respetando el formato de píxeles
+            // (asumiendo formato BGR de 3 bytes por píxel)
+            for(int iter=0; iter < effective_width; iter+=3){
+                pixels[iter + i*pitch] = temp[effective_width - iter - 3];
+                pixels[iter + 1 + i*pitch] = temp[effective_width - iter - 2];
+                pixels[iter + 2 + i*pitch] = temp[effective_width - iter - 1];
             }
         } 
     }
     
     else if(axis == axis::ORDINATE){
         for(int i = 0; i < surface->h / 2; ++i) {
-            // get pointers to the two rows to swap
-            char* row_above = pixels + i * pitch;
-            char* row_below = pixels + (surface->h - i - 1) * pitch;
+            // intercambia filas de píxeles
+            // usando un buffer temporal para evitar sobrescritura
+            unsigned char* row_above = pixels + i * pitch;
+            unsigned char* row_below = pixels + (surface->h - i - 1) * pitch;
             
-            // swap rows
-            memcpy(temp, row_above, pitch);
+            // intercambia las filas
+            memcpy(temp, row_above, pitch); // destiny, source, bytes size
             memcpy(row_above, row_below, pitch);
             memcpy(row_below, temp, pitch);
         }
     }
 
+    // Liberar memoria temporal
     delete[] temp;
 
-    SDL_UnlockSurface(surface);
+    SDL_UnlockSurface(surface); // desbloquea la superficie
 }
 
-
-
 Vector2D GameObject::predict_position(float dt) const{
+    // Predice la nueva posición basándose en la velocidad y aceleración
+    // dt: tiempo transcurrido desde el último frame (en segundos)
     float x = pos.get_x() + vel.get_x()*dt + (acc.get_x()/2) * (dt*dt);
     float y = pos.get_y() + vel.get_y()*dt + (acc.get_y()/2) * (dt*dt);
 
@@ -393,6 +390,7 @@ Vector2D GameObject::predict_position(float dt) const{
 }
 
 Vector2D GameObject::predict_velocity(float dt) const{
+    // Predice la nueva velocidad basándose en la aceleración
     float x = vel.get_x() + acc.get_x()*dt;
     float y = vel.get_y() + acc.get_y()*dt;
 

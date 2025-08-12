@@ -3,6 +3,8 @@
 Stage0::Stage0(SDL_Window* window_, Player* prota_):
 Stage(window_, prota_, new Background(window_, SDL_LoadBMP("../imgs/stage0.bmp"))){
     create_scenario();
+
+    prota_->set_current_pos(100, 100);
 }
 
 void Stage0::create_scenario(){

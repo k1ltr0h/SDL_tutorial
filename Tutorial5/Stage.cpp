@@ -56,25 +56,28 @@ void Stage::update(float dt){
     for(iter = objects.begin(); iter != objects.end(); iter++){
         (*iter)->update(dt, objects); // cambiar list por vector
     }
+
     boundary();
 }
 
 void Stage::boundary(){
-    Vector2D pos = prota->get_position();
+    Vector2D& prota_pos = prota->get_position();
 
     int left_boundary = 0;
     int right_boundary = background->get_surface_width();
 
-    if(pos.get_x() < left_boundary){
-        pos.set_x(left_boundary);
+    if(prota_pos.get_x() < left_boundary){
+        prota_pos.set_x(left_boundary);
         prota->stop(GameObject::axis::ABSCISSA);
         prota->center(); 
     }
-    else if(pos.get_x() > right_boundary){
-        pos.set_x(right_boundary);
+    else if(prota_pos.get_x() > right_boundary){
+        prota_pos.set_x(right_boundary);
         prota->stop(GameObject::axis::ABSCISSA);
         prota->center();
     }
+
+    //printf("Prota X: %.2f vel X: %.2f acc X: %.2f\n", prota_pos.get_x(), prota->get_velocity().get_x(), prota->get_acceleration().get_x());
 }
 
 void Stage::objects_push_back(GameObject* obj){
