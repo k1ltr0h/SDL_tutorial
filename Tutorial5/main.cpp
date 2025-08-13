@@ -34,8 +34,6 @@ void graphics(Stage* playground);
 SDL_Renderer* renderer = NULL;
 // Ventanas
 SDL_Window* window = NULL;
-int width = 640;
-int height = 480;
 // Variables de entorno
 bool endGame = false;
 // Imagenes
@@ -55,18 +53,19 @@ int main(int argc, char* args[]){
 	}
 	else{
 		// SDL_WINDOW_HIDDEN,  SDL_WINDOW_SHOWN
-		window = SDL_CreateWindow("Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow("Tutorial", 
+                                SDL_WINDOWPOS_UNDEFINED, 
+                                SDL_WINDOWPOS_UNDEFINED, 
+                                config.get_window_width(), 
+                                config.get_window_height(), 
+                                SDL_WINDOW_SHOWN);
 		if( window == NULL ){
 			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
             return -1;
 		}
 	}
-    //SDL_Delay(1000); // Uint32 ms
 
-	//renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	player_img = SDL_LoadBMP("../imgs/sonic.bmp");
-	//SDL_Texture* tex =  SDL_CreateTextureFromSurface(renderer, sonic);
-    //SDL_FreeSurface(sonic);
+	player_img = SDL_LoadBMP("../imgs/player_v3_3.bmp");
 
     if (!player_img) {
         SDL_Log("Error cargando imagen: %s", SDL_GetError());
@@ -122,6 +121,7 @@ int main(int argc, char* args[]){
 	}
 
     delete player;
+    delete playground;
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     return 0;

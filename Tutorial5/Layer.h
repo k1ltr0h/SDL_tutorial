@@ -2,7 +2,10 @@
 
 class Layer: public GameObject{
 public:
-    Layer(SDL_Window* window_, SDL_Surface* sur_, SDL_Rect rect_={0,0,640,480}, unsigned int depth_=100);
+    Layer(SDL_Window* window_, 
+          SDL_Surface* sur_, 
+          SDL_Rect rect_={0,0,640,480}, 
+          unsigned int depth_=100);
     virtual ~Layer();
 
     void set_depth(int depth_);

@@ -4,7 +4,6 @@
 
 GameObject::~GameObject(){
     if (texture) SDL_DestroyTexture(texture);
-    if (surface) SDL_FreeSurface(surface);
 }
 
 GameObject::GameObject(SDL_Surface* sur_, 
@@ -15,8 +14,6 @@ GameObject::GameObject(SDL_Surface* sur_,
     (sur_ != NULL)? surface_width = sur_->w : surface_width = rect_.w;
     (sur_ != NULL)? surface_height = sur_->h : surface_height = rect_.h;
     surface = sur_;
-    //vertical_flip_surface = flip_surface(axis::ORDINATE);
-    //horizontal_flip_surface = flip_surface(axis::ABSCISSA);
 
     object_type = type::PLATFORM;
     depth = 10;
@@ -33,7 +30,7 @@ GameObject::GameObject(SDL_Surface* sur_,
     gravity_activated = grav_activated_;
     collidable = collidable_;
 
-    hit_box = {{pos.get_x() - rect_.w /2, 
+    hit_box = {{pos.get_x(), 
                 pos.get_y() - rect_.h /2},
                 rect_.w, 
                 rect_.h};
@@ -44,27 +41,19 @@ GameObject::GameObject(SDL_Surface* sur_,
 
 void GameObject::render(SDL_Renderer* renderer){
     if (!texture) {
-        texture = SDL_CreateTexture(
-            renderer,
-            surface->format->format, // SDL_PIXELFORMAT_BGR24
-            SDL_TEXTUREACCESS_STREAMING,
-            surface->w,
-            surface->h
-        );
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
         if (!texture) {
             SDL_Log("Error creando streaming-texture: %s", SDL_GetError());
             return;
         }
+        // Si 0 < alpha < 255 mezcla (blend) el fondo con la textura
+        //SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND); 
+
+        SDL_FreeSurface(surface);
     }
 
-    SDL_UpdateTexture(
-       texture,
-        nullptr,                  // actualiza toda la textura
-        surface->pixels,
-        surface->pitch
-    );
-
-    SDL_RenderCopy(renderer, this->texture, &src_rect, &dst_rect);
+    SDL_RenderCopyEx(renderer, this->texture, &src_rect, &dst_rect, 0.0, nullptr, 
+                     get_horizontal_flip() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
 
 void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& all_objects){
@@ -232,29 +221,20 @@ bool GameObject::swept_aabb(const GameObject& obstacle,
 }
 
 void GameObject::update(float dt,
+                        Vector2D& camera_offset,
                         const std::vector<GameObject*>& all_objects,
                         bool centered){
-    resolve_collisions(dt, all_objects);
 
-    // 6) Resto de física “global”
-    ground();
-    brake();
+    if (!static_object) {
+        resolve_collisions(dt, all_objects);
 
-    hit_box.center = { pos.get_x(), pos.get_y() - dst_rect.h * 0.5f };
-    hit_box.width  = dst_rect.w;
-    hit_box.height = dst_rect.h;
+        ground();
+        brake();
 
-    // 7) Actualiza dst_rect / hitbox desde pos (pos = bottom-center)
-    if (centered) {
-        center();
-    } else {
-        dst_rect = {
-            int(pos.get_x() - dst_rect.w/2),
-            int(pos.get_y() - dst_rect.h),
-            dst_rect.w,
-            dst_rect.h
-        };
+        hit_box.center = { pos.get_x(), pos.get_y() - dst_rect.h * 0.5f };
     }
+
+    update_dst_rect_from_pos(camera_offset, centered);
 }
 
 
@@ -318,13 +298,6 @@ void GameObject::ground(){ // Hard-coding for fake ground
         vel.set_y(0);
         on_air = false;
     }
-}
-
-void GameObject::center(){
-    int half_width = src_rect.w/2;
-    int all_height = src_rect.h;
-    
-    dst_rect = {int(pos.get_x() - half_width), int(pos.get_y() - all_height), dst_rect.w, dst_rect.h};
 }
 
 void GameObject::blit_surface(GameObject* obj){

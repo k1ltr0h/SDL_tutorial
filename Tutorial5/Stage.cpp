@@ -3,6 +3,11 @@
 Stage::Stage(SDL_Window* window_, Player* prota_, Background* background_=NULL){
     window = window_;
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    
+    int window_w, window_h;
+    SDL_GetWindowSize(window, &window_w, &window_h);
+    camera = {0, 0, window_w, window_h, {0, 0}}; // Inicializa la cámara con un tamaño por defecto
+
     prota = prota_;
     objects.push_back(prota);
     background = background_;
@@ -18,46 +23,23 @@ Stage::~Stage(){
 }
 
 void Stage::render(){
-    background->set_surface(SDL_ConvertSurface(clean_surface, clean_surface->format, SDL_SWSURFACE));
+    background->render(renderer);
 
     for(iter = objects.begin(); iter != objects.end(); iter++){
-        background->blit_surface(*iter);
+        (*iter)->render(renderer);
     }
-    render_background();
-}
-
-// Pinta el fondo y todos los objetos que están en presentes
-// en la sección visible de la pantalla.
-// También define los límites de la pantalla.
-void Stage::render_background(){
-    Vector2D pos = prota->get_position();
-    SDL_Rect bg_rect = background->get_src_rect();
-
-    int sprite_width = bg_rect.w;
-    int sprite_height = bg_rect.h;
-    int source_x = pos.get_x() - (sprite_width/2);
-    int source_y = 0;
-
-    int left_boundary = 0;
-    int right_boundary = background->get_surface_width() - sprite_width;
-
-    if(source_x < left_boundary){
-        source_x = left_boundary; 
-    }
-    else if(source_x > right_boundary){
-        source_x = right_boundary;
-    }
-
-    background->set_src_rect(source_x, source_y, sprite_width, sprite_height);
-    background->render(renderer);
 }
 
 void Stage::update(float dt){
+    background->update(dt, camera.offset, objects, false);
+
     for(iter = objects.begin(); iter != objects.end(); iter++){
-        (*iter)->update(dt, objects); // cambiar list por vector
+        (*iter)->update(dt, camera.offset, objects); // cambiar list por vector
     }
 
     boundary();
+
+    camera.follow(prota, background->get_surface_width(), background->get_surface_height());
 }
 
 void Stage::boundary(){
@@ -69,15 +51,13 @@ void Stage::boundary(){
     if(prota_pos.get_x() < left_boundary){
         prota_pos.set_x(left_boundary);
         prota->stop(GameObject::axis::ABSCISSA);
-        prota->center(); 
+        prota->update_dst_rect_from_pos(camera.offset); 
     }
     else if(prota_pos.get_x() > right_boundary){
         prota_pos.set_x(right_boundary);
         prota->stop(GameObject::axis::ABSCISSA);
-        prota->center();
+        prota->update_dst_rect_from_pos(camera.offset);
     }
-
-    //printf("Prota X: %.2f vel X: %.2f acc X: %.2f\n", prota_pos.get_x(), prota->get_velocity().get_x(), prota->get_acceleration().get_x());
 }
 
 void Stage::objects_push_back(GameObject* obj){

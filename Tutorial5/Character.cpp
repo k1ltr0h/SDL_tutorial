@@ -8,8 +8,8 @@ GameObject::GameObject(sur_, rect_, pos_, collidable_, grav_activated_){
     set_object_type(GameObject::type::NPC);
 }
 
-void Character::update(float dt, const std::vector<GameObject*>& allObjects, bool centered){
-    GameObject::update(dt, allObjects, centered);
+void Character::update(float dt, Vector2D& camera_offset, const std::vector<GameObject*>& allObjects, bool centered){
+    GameObject::update(dt, camera_offset, allObjects, centered);
     animate();
 }
 
@@ -18,51 +18,34 @@ void Character::animate(){
     int new_src_x = 0;
     bool need_flip = false;
 
-    // Draw sprite movement
+    // Animación de sprites
     if(spriteFrameCounter % config.get_frames_per_sprite() == 0){
-        if(get_move_dir_x() < 0){ // make the flip
-            // Si la velocidad es negativa, significa que se mueve a la izquierda
-            // y por tanto el sprite debe estar volteado horizontalmente
-            // eso significa que el sprite debe empezar desde el final de la imagen
-            // y avanzar hacia la izquierda sin contar el primer sprite que representa el idle.
-            if(get_surface_width() - src_rect.w > 0)
-                new_src_x = (src_rect.x + src_rect.w) % (get_surface_width() - src_rect.w);
-            // Si el sprite está volteado horizontalmente, no es necesario volver a voltear
+        // Si no se ha movido, no cambia el sprite
+        if((get_move_dir_x() < 0 || get_move_dir_x() > 0) && get_surface_width() - src_rect.w > 0){
+            new_src_x =  src_rect.w + (src_rect.x % (get_surface_width() - src_rect.w));
+        }
+        // Si se mueve a la izquierda, se voltea
+        if(get_move_dir_x() < 0){
             if(!get_horizontal_flip()){
                 need_flip = true;
             }
         }
+        // Si se mueve a la derecha, no se voltea
         else if(get_move_dir_x() > 0){
-            // Si la velocidad es positiva, significa que se mueve a la derecha
-            // y por tanto el sprite debe estar en su posición original
-            // y avanzar hacia la derecha sin contar el primer sprite que representa el idle.
-            if(get_surface_width() - src_rect.w > 0)
-                new_src_x =  src_rect.w + (src_rect.x % (get_surface_width() - src_rect.w));
-            // Si el sprite está volteado horizontalmente, es necesario volver a voltear
             if(get_horizontal_flip()){
                 need_flip = true;
             }
         }
-        // Si está en idle y se flipea horizontalmente, es necesario cambiar el src_rect_x
-        else if(get_horizontal_flip()){
-            if(get_surface_width() - src_rect.w > 0)
-                new_src_x = get_surface_width() - src_rect.w;
-        }
-
-        //printf("%d-%d\n", get_orientation(), counter);
-
         // Si requiere voltear, se voltea
         if(need_flip){
-            flip_surface();
+            //flip_surface();
             set_horizontal_flip(!get_horizontal_flip());
         }
-
+        // Actualiza la posición del sprite en el sprite sheet
         set_src_rect(new_src_x, src_rect.y, src_rect.w, src_rect.h);
         spriteFrameCounter = 0;
     }
-
-    //printf("%d-%d-%d\n", src_rect->x, (src_rect->x + src_rect->w), (src_rect->x + src_rect->w) % get_surface_width());
-
+    // Incrementa el contador de frames
     spriteFrameCounter++;
 }
 

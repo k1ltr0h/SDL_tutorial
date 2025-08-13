@@ -8,6 +8,27 @@
 #include "GameConfig.h"
 #include "Vector2D.h"
 
+struct Hitbox {
+    Vector2D center;   // centro del hitbox (coordenadas absolutas)
+    int width;
+    int height;
+
+    SDL_Rect to_rect() const {
+        return {
+            int(center.get_x() - width / 2),
+            int(center.get_y() - height / 2),
+            width,
+            height
+        };
+    }
+
+    // Devuelve los bordes directamente
+    float left()   const { return center.get_x() - width / 2.0f; }
+    float right()  const { return center.get_x() + width / 2.0f; }
+    float top()    const { return center.get_y() - height / 2.0f; }
+    float bottom() const { return center.get_y() + height / 2.0f; }
+};
+
 class GameObject{
 public:
     // ——— Enumeraciones ———————————————————————
@@ -19,27 +40,6 @@ public:
 
     /** @brief Clasificación genérica de objetos. */
     enum type { PLAYER, PLATFORM, NPC };
-
-    struct Hitbox {
-        Vector2D center;   // centro del hitbox (coordenadas absolutas)
-        int width;
-        int height;
-
-        SDL_Rect to_rect() const {
-            return {
-                int(center.get_x() - width / 2),
-                int(center.get_y() - height / 2),
-                width,
-                height
-            };
-        }
-
-        // Devuelve los bordes directamente
-        float left()   const { return center.get_x() - width / 2.0f; }
-        float right()  const { return center.get_x() + width / 2.0f; }
-        float top()    const { return center.get_y() - height / 2.0f; }
-        float bottom() const { return center.get_y() + height / 2.0f; }
-    };
 
     // ——— Constructores / Destructor —————————————
     /** 
@@ -76,7 +76,10 @@ public:
      * @param dt          Tiempo transcurrido desde el último frame (s).
      * @param allObjects  Lista de todos los GameObject* del escenario.
      */
-    virtual void update(float dt, const std::vector<GameObject*>& allObjects, bool centered = true);
+    virtual void update(float dt,
+                        Vector2D& camera_offset, 
+                        const std::vector<GameObject*>& allObjects, 
+                        bool centered = true);
 
     /**
      * @brief Cambia la aceleración según la dirección indicada.
@@ -95,12 +98,6 @@ public:
 
     /** @brief Fija al suelo si pos.y ≥ GROUND (constante en .cpp). */
     void ground();
-
-    /**
-     * @brief Recalcula el hit_box y dst_rect centrados en pos.
-     * Para sprites que definen su box alrededor de su centro.
-     */
-    void center();
 
     /**
      * @brief Blitea otro GameObject sobre la superficie interna.
@@ -335,6 +332,10 @@ public:
         return collidable;
     }
 
+    bool is_static() const{
+        return static_object;
+    }
+
     /**
      * @brief Consulta si el objeto está en el aire.
      * @return true si no está en contacto con el suelo.
@@ -503,11 +504,34 @@ public:
     }
 
     /**
+     * @brief Actualiza dst_rect y hit_box desde pos.
+     * @param camera_offset Desplazamiento de la cámara (Vector2D).
+     * @param centered Si true, centra el dst_rect en pos.
+     */
+    void update_dst_rect_from_pos(Vector2D& camera_offset, bool centered = true){
+        if(centered) {
+            set_dst_rect_position(int(pos.get_x() - dst_rect.w / 2 - camera_offset.get_x()),
+                                  int(pos.get_y() - dst_rect.h - camera_offset.get_y()));
+        } else {
+            set_dst_rect_position(int(pos.get_x() - camera_offset.get_x()),
+                                  int(pos.get_y() - camera_offset.get_y()));
+        }
+    }
+
+    /**
      * @brief Establece la profundidad de dibujo (orden Z).
      * @param depth_ Valor sin signo; mayor = dibuja encima.
      */
     void set_depth(unsigned int depth_){
         depth = depth_;
+    }
+
+    /**
+     * @brief Objeto es estatico o dinámico.
+     * @param static_ true = estático (no se mueve).
+     */
+    void set_static(bool static_){
+        static_object = static_;
     }
 
     /**
@@ -620,6 +644,9 @@ private:
 
     /// Si es true, participa en los tests de colisión.
     bool collidable;
+
+    /// Si es true, el objeto no se mueve (plataformas estáticas).
+    bool static_object = true;
 
     /// True cuando el objeto está en el aire (no apoyado).
     bool on_air = false;
