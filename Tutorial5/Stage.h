@@ -31,14 +31,10 @@ public:
     virtual ~Stage();
     virtual void create_scenario()=0;
     void render();
-    void render_background(); 
-    void update_camera(); // reemplaza render_background()
+    void update_camera();
     void update(float dt);
     void boundary();
     void objects_push_back(GameObject* obj);
-    
-    //void list_to_list(std::list<GameObject*> list, std::list<GameObject*> otherlist);
-    //void save_Collisions(GameObject* obj);
 
     SDL_Renderer* get_renderer();
 
@@ -50,8 +46,6 @@ private:
     Camera camera;
     Player* prota;
     Background* background;
-    SDL_Surface* clean_surface;
     std::vector<GameObject*> objects;
     std::vector<GameObject*>::iterator iter;
-    std::vector<GameObject*>::iterator iter2;
 };

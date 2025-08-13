@@ -11,9 +11,6 @@ Stage::Stage(SDL_Window* window_, Player* prota_, Background* background_=NULL){
     prota = prota_;
     objects.push_back(prota);
     background = background_;
-
-    SDL_Surface* bg_surface = background->get_surface();
-    clean_surface = SDL_ConvertSurface(bg_surface, bg_surface->format, SDL_SWSURFACE);
 }
 
 Stage::~Stage(){
