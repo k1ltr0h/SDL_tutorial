@@ -100,18 +100,6 @@ public:
     void ground();
 
     /**
-     * @brief Blitea otro GameObject sobre la superficie interna.
-     * @param obj  Puntero al objeto que se dibujará aquí.
-     */
-    void blit_surface(GameObject* obj);
-
-    /**
-     * @brief Voltea la imagen internamente.
-     * @param which  Eje a voltear: ABSCISSA (X), ORDINATE (Y) o ALL.
-     */
-    void flip_surface(axis which = ABSCISSA);
-
-    /**
      * @brief Calcula la velocidad futura sin mutar el estado.
      * @param dt  Delta‐time en segundos.
      * @return La velocidad resultante vel + acc·dt (pre‐clamp).
