@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Background.h"
 #include "Box.h"
+#include "Platform.h"
 
 struct Camera {
     int x, y, w, h;

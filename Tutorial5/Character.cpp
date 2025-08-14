@@ -50,10 +50,11 @@ void Character::animate(){
 }
 
 void Character::jump(){
-    //get_acceleration().set_y(-20000); Salto varía según valor de dt
-    get_velocity().set_y(-700); // Salto no varía según valor de dt
+    Vector2D vel = get_velocity();
+    //set_current_acc(acc.get_x(), -20000); Salto varía según valor de dt
+    set_current_vel(vel.get_x(), -700); // Salto no varía según valor de dt
 
-    set_on_air(true);
+    set_jumped_since_grounded(true);
 }
 
 void Character::attack(){

@@ -96,9 +96,6 @@ public:
     /** @brief Aplica freno horizontal automático. */
     void brake();
 
-    /** @brief Fija al suelo si pos.y ≥ GROUND (constante en .cpp). */
-    void ground();
-
     /**
      * @brief Calcula la velocidad futura sin mutar el estado.
      * @param dt  Delta‐time en segundos.
@@ -171,7 +168,6 @@ public:
                     float&          outT,
                     int&            outAxis) const;
 
-
     // ——— Getters ———————————————————————————————————————————
 
     /**
@@ -199,40 +195,10 @@ public:
     }
 
     /**
-     * @brief Obtiene la posición actual del objeto.
-     *
-     * Devuelve una referencia al vector interno de posición,
-     * cuyas componentes x e y representan las coordenadas
-     * del centro del objeto en el espacio de juego.
-     * Al retornar por referencia, permite tanto leer
-     * como actualizar directamente la posición.
-     *
-     * @return Vector2D& Referencia al vector de posición.
-     */
-    Vector2D& get_position(){
-        return pos;
-    }
-
-    /**
      * @brief Velocidad actual del objeto.
      * @return Referencia constante a un Vector2D con la velocidad (vx,vy).
      */
     const Vector2D& get_velocity() const{
-        return vel;
-    }
-
-    /**
-     * @brief Obtiene la velocidad actual del objeto.
-     *
-     * Devuelve una referencia al vector interno de velocidad,
-     * cuyas componentes x e y representan la velocidad
-     * del objeto en píxeles por segundo.
-     * Al retornar por referencia, permite tanto consultar
-     * como modificar directamente la velocidad.
-     *
-     * @return Vector2D& Referencia al vector de velocidad.
-     */
-    Vector2D& get_velocity(){
         return vel;
     }
 
@@ -245,22 +211,10 @@ public:
     }
 
     /**
-     * @brief Obtiene la aceleración actual del objeto (mutable).
-     * 
-     * Esta versión devuelve una referencia no-const al vector de aceleración
-     * interno, permitiendo modificar directamente sus componentes.
-     * 
-     * @return Referencia al Vector2D interno `acc`.
-     */
-    Vector2D& get_acceleration() {   
-        return acc;
-    }
-
-    /**
      * @brief Devuelve el rectángulo fuente para extracción de la textura.
      * @return Referencia al SDL_Rect que define la subregión de la superficie.
      */
-    SDL_Rect& get_src_rect(){
+    const SDL_Rect& get_src_rect() const{
         return src_rect;
     }
 
@@ -268,7 +222,7 @@ public:
      * @brief Devuelve el rectángulo destino en pantalla.
      * @return Referencia al SDL_Rect que define dónde se dibuja el sprite.
      */
-    SDL_Rect& get_dst_rect(){
+    const SDL_Rect& get_dst_rect() const{
         return dst_rect;
     }
 
@@ -284,7 +238,7 @@ public:
      * @brief Altura (en píxeles) de la superficie original.
      * @return Entero con la altura en píxeles.
      */
-    int get_surface_height() const{
+    const int get_surface_height() const{
         return surface_height;
     }
 
@@ -292,7 +246,7 @@ public:
      * @brief Anchura (en píxeles) de la superficie original.
      * @return Entero con la anchura en píxeles.
      */
-    int get_surface_width() const{
+    const int get_surface_width() const{
         return surface_width;
     }
 
@@ -300,7 +254,7 @@ public:
      * @brief Profundidad de dibujo (orden Z) del objeto.
      * @return Valor sin signo; mayor = se dibuja encima.
      */
-    unsigned int get_depth() const{
+    const unsigned int get_depth() const{
         return depth;
     }
 
@@ -308,7 +262,7 @@ public:
      * @brief Tipo de objeto (PLAYER, PLATFORM, NPC).
      * @return Valor de la enum type.
      */
-    type get_object_type() const{
+    const type get_object_type() const{
         return object_type;
     }
 
@@ -316,11 +270,15 @@ public:
      * @brief Indica si el objeto participa en colisiones.
      * @return true si el objeto es collidable.
      */
-    bool is_collidable() const{
+    const bool is_collidable() const{
         return collidable;
     }
 
-    bool is_static() const{
+    /**
+     * @brief Indica si el objeto es estático (no se mueve ni colisiona).
+     * @return true si el objeto es estático.
+     */
+    const bool is_static() const{
         return static_object;
     }
 
@@ -328,15 +286,19 @@ public:
      * @brief Consulta si el objeto está en el aire.
      * @return true si no está en contacto con el suelo.
      */
-    bool get_on_air() const{
+    const bool get_on_air() const{
         return on_air;
+    }
+
+    bool has_jumped_since_grounded() const {
+        return jumped_since_grounded; 
     }
 
     /**
      * @brief Indica si la textura está volteada horizontalmente.
      * @return true si hay flip horizontal activo.
      */
-    bool get_horizontal_flip() const{
+    const bool get_horizontal_flip() const{
         return horizontal_flip;
     }
 
@@ -344,7 +306,7 @@ public:
      * @brief Indica si la textura está volteada verticalmente.
      * @return true si hay flip vertical activo.
      */
-    bool get_vertical_flip() const{ 
+    const bool get_vertical_flip() const{ 
         return vertical_flip;
     }
 
@@ -352,7 +314,7 @@ public:
      * @brief Obtiene la velocidad máxima en el eje X.
      * @return Valor entero con la velocidad máxima horizontal (px/s).
      */
-    int get_max_vel_x() const {
+    const int get_max_vel_x() const{
         return max_vel_x;
     }
 
@@ -360,7 +322,7 @@ public:
      * @brief Obtiene la velocidad máxima en el eje Y.
      * @return Valor entero con la velocidad máxima vertical (px/s).
      */
-    int get_max_vel_y() const {
+    const int get_max_vel_y() const{
         return max_vel_y;
     }
 
@@ -368,7 +330,7 @@ public:
      * @brief Obtiene la dirección de movimiento horizontal.
      * @return 0 = parado, +1 = derecha, -1 = izquierda.
      */
-    int get_move_dir_x() const {
+    const int get_move_dir_x() const{
         return move_dir_x;
     }
 
@@ -377,7 +339,7 @@ public:
      * @return 0 = parado, +1 = abajo, -1 = arriba.
      * Util para juegos con vista cenital o con profundidad.
      */
-    int get_move_dir_y() const {
+    const int get_move_dir_y() const{
         return move_dir_y;
     }
 
@@ -531,6 +493,14 @@ public:
     }
 
     /**
+     * @brief Marca si el objeto ha saltado desde el suelo (coyote infinito).
+     * @param v true = ha saltado; false = no ha saltado.
+     */
+    void set_jumped_since_grounded(bool jumped_since_grounded_){
+        jumped_since_grounded = jumped_since_grounded_; 
+    }
+
+    /**
      * @brief Activa o desactiva el flip horizontal.
      * @param horizontal_flip_ true = volteo horizontal.
      */
@@ -638,6 +608,9 @@ private:
 
     /// True cuando el objeto está en el aire (no apoyado).
     bool on_air = false;
+
+    /// True si se ha saltado desde el suelo (coyote infinito).
+    bool jumped_since_grounded = false; // coyote infinito: 1 salto hasta volver a tocar suelo
 
     /// True si la textura está volteada horizontalmente.
     bool horizontal_flip = false;

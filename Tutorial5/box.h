@@ -2,5 +2,5 @@
 
 class Box: public GameObject{
 public:
-    Box(SDL_Surface* skin, Vector2D pos_);
+    Box(SDL_Surface* sprite, Vector2D pos_);
 };

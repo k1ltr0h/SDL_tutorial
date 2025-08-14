@@ -69,9 +69,6 @@ int main(int argc, char* args[]){
 
     if (!player_img) {
         SDL_Log("Error cargando imagen: %s", SDL_GetError());
-    } else {
-        SDL_Log("Formato: %s", SDL_GetPixelFormatName(player_img->format->format));
-        SDL_Log("Bytes por píxel: %d", player_img->format->BytesPerPixel);
     }
 
     player = new Player(player_img);
@@ -142,7 +139,7 @@ void keyPressed(float dt){
     }
 
     // Eje y
-    if(keystate[SDL_SCANCODE_SPACE] && !player->get_on_air()){
+    if(keystate[SDL_SCANCODE_SPACE] && !player->has_jumped_since_grounded()){
         player->jump();
     }
 }
