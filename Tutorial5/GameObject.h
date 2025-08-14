@@ -78,8 +78,7 @@ public:
      */
     virtual void update(float dt,
                         Vector2D& camera_offset, 
-                        const std::vector<GameObject*>& allObjects, 
-                        bool centered = true);
+                        const std::vector<GameObject*>& allObjects);
 
     /**
      * @brief Cambia la aceleración según la dirección indicada.
@@ -290,6 +289,10 @@ public:
         return on_air;
     }
 
+    /**
+     * @brief Indica si el objeto ha saltado desde la última vez que tocó el suelo.
+     * @return true si se ha saltado.
+     */
     bool has_jumped_since_grounded() const {
         return jumped_since_grounded; 
     }
@@ -458,14 +461,9 @@ public:
      * @param camera_offset Desplazamiento de la cámara (Vector2D).
      * @param centered Si true, centra el dst_rect en pos.
      */
-    void update_dst_rect_from_pos(Vector2D& camera_offset, bool centered = true){
-        if(centered) {
-            set_dst_rect_position(int(pos.get_x() - dst_rect.w / 2 - camera_offset.get_x()),
-                                  int(pos.get_y() - dst_rect.h - camera_offset.get_y()));
-        } else {
-            set_dst_rect_position(int(pos.get_x() - camera_offset.get_x()),
-                                  int(pos.get_y() - camera_offset.get_y()));
-        }
+    void update_dst_rect_from_pos(Vector2D& camera_offset){
+        set_dst_rect_position(int(pos.get_x() - dst_rect.w / 2 - camera_offset.get_x()),
+                              int(pos.get_y() - dst_rect.h - camera_offset.get_y()));
     }
 
     /**

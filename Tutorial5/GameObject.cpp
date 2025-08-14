@@ -96,8 +96,6 @@ void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& al
         candidates.push_back(other);
     }
 
-    set_on_air(true); // Si no hay colisión con el suelo, se considera que está en el aire
-
     // Bucle: consumir dt en varios “sub‑pasos” si hay impactos encadenados
     while (remaining_t > 0.0f && impacts < max_impacts_per_frame) {
         // 1) Predicción con el tiempo restante
@@ -270,17 +268,17 @@ bool GameObject::swept_aabb(const GameObject& obstacle,
 
 void GameObject::update(float dt,
                         Vector2D& camera_offset,
-                        const std::vector<GameObject*>& all_objects,
-                        bool centered){
+                        const std::vector<GameObject*>& all_objects){
 
     if (!static_object) {
+        set_on_air(true); // Si no hay colisión con el suelo, se considera que está en el aire
         resolve_collisions(dt, all_objects);
         brake();
 
         hit_box.center = { pos.get_x(), pos.get_y() - dst_rect.h * 0.5f };
     }
 
-    update_dst_rect_from_pos(camera_offset, centered);
+    update_dst_rect_from_pos(camera_offset);
 }
 
 

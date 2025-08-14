@@ -4,7 +4,8 @@ class Layer: public GameObject{
 public:
     Layer(SDL_Window* window_, 
           SDL_Surface* sur_, 
-          SDL_Rect rect_={0,0,640,480}, 
+          SDL_Rect rect_={0,0,640,480},
+          Vector2D pos_ = Vector2D(), 
           unsigned int depth_=100);
     virtual ~Layer();
 

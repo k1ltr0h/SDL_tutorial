@@ -8,8 +8,8 @@ GameObject::GameObject(sur_, rect_, pos_, collidable_, grav_activated_){
     set_object_type(GameObject::type::NPC);
 }
 
-void Character::update(float dt, Vector2D& camera_offset, const std::vector<GameObject*>& allObjects, bool centered){
-    GameObject::update(dt, camera_offset, allObjects, centered);
+void Character::update(float dt, Vector2D& camera_offset, const std::vector<GameObject*>& allObjects){
+    GameObject::update(dt, camera_offset, allObjects);
     animate();
 }
 

@@ -16,10 +16,8 @@ Platform::Platform(SDL_Surface* sprite, SDL_Rect rect_,
     tile_width_ = sprite->w;
     tile_height_ = sprite->h;
 
-    const float center_x_full = pos.get_x() + (total_width_ * 0.5f);
     hit_box.width  = total_width_;
     hit_box.height = total_height_;
-    hit_box.center.set_x(center_x_full);
 
     set_hit_box(hit_box);
 }
@@ -28,21 +26,22 @@ void Platform::render(SDL_Renderer* renderer){
     // Guardar estado de rects para restaurar al final
     SDL_Rect src_rect = get_src_rect();
     SDL_Rect dst_rect = get_dst_rect();
+    Vector2D pos = get_position();
 
     // 1) Dibuja el primer tile utilizando la lógica existente de GameObject
     GameObject::render(renderer);
-
+    
     // Si la textura aún no existía, GameObject::render() la habrá creado.
     SDL_Texture* tex = get_texture();
     if (!tex) {
         return;
     }
 
-    // 2) Dibujar los tiles restantes (del 2º al último)
+    // 2) Dibujar los tiles restantes (todos menos el central)
     const int tile_w = src_rect.w;
     //const int tile_h = src_rect.h;
 
-    // Nada que hacer si el ancho total cabe en un solo tile
+    // Si el ancho era igual o menor que un tile, no hay nada más que dibujar
     if (total_width_ <= tile_w) {
         return;
     }
@@ -50,9 +49,13 @@ void Platform::render(SDL_Renderer* renderer){
     // Reutilizamos un src local para NO tocar el rect original (evita parpadeos o efectos no deseados)
     SDL_Rect src_part = src_rect;
     SDL_Rect dst_tile = dst_rect;
+    int half_width = total_width_/2;
 
-    // Empezamos desde tile_w porque el primer tile ya se dibujó
-    for (int offset_x = tile_w; offset_x < total_width_; offset_x += tile_w) {
+    // Dibujar los tiles de izquierda a derchea saltandose el centro
+    for (int offset_x = -half_width; offset_x < half_width; offset_x += tile_w) {
+        if(offset_x == 0) {
+            continue; // El primer tile ya se dibujó
+        }
         const int remaining = total_width_ - offset_x;
         dst_tile.x = dst_rect.x + offset_x;
 
@@ -72,9 +75,7 @@ void Platform::render(SDL_Renderer* renderer){
 
 void Platform::update(float dt,
                       Vector2D& camera_offset,
-                      const std::vector<GameObject*>& all_objects,
-                      bool centered){
-
+                      const std::vector<GameObject*>& all_objects){
     Vector2D pos = get_position();
     SDL_Rect dst_rect = get_dst_rect();
     // 1) Actualizar dst_rect según la posición y el offset de la cámara

@@ -6,8 +6,7 @@ public:
     void render(SDL_Renderer* renderer) override;
     void update(float dt, 
          Vector2D& camera_offset, 
-         const std::vector<GameObject*>& allObjects, 
-         bool centered = true) override;
+         const std::vector<GameObject*>& allObjects) override;
 
     void set_total_width(int total_width_pixels) { total_width_ = total_width_pixels; }
     int  get_total_width() const { return total_width_; }

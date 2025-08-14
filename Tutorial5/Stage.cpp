@@ -28,7 +28,7 @@ void Stage::render(){
 }
 
 void Stage::update(float dt){
-    background->update(dt, camera.offset, objects, false); // No se centra
+    background->update(dt, camera.offset, objects); // No se centra
 
     for(iter = objects.begin(); iter != objects.end(); iter++){
         (*iter)->update(dt, camera.offset, objects); // cambiar list por vector
