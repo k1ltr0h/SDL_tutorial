@@ -15,6 +15,6 @@ public:
 
 
 private:
-    int spriteFrameCounter;
+    int sprite_frame_counter;
     int acc_jump;
 };

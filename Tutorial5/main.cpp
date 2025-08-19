@@ -76,13 +76,17 @@ int main(int argc, char* args[]){
 
     renderer = playground->get_renderer();
 
-    int frameDelay = 1000 / config.get_targetFPS();
-    Uint32 lastTicks = SDL_GetTicks();
+    int frame_delay = 1000 / config.get_targetFPS(); // El tiempo de espera entre frames en milisegundos
+    if(frame_delay < 0) {
+        frame_delay = 0; // Asegurarse de que no sea negativo
+    }
+
+    Uint32 last_ticks = SDL_GetTicks();
 
 	while(!endGame){
         Uint32 now = SDL_GetTicks();
-        float dt = (now - lastTicks) / 1000.0f;  // dt en segundos
-        lastTicks = now;
+        float dt = (now - last_ticks) / 1000.0f;  // Tiempo transcurrido en segundos
+        last_ticks = now;
 
         phisics(dt, playground);
         graphics(playground);
@@ -111,9 +115,9 @@ int main(int argc, char* args[]){
 		}
 
         // Espera lo necesario para mantener el frame rate
-        Uint32 frameTime = SDL_GetTicks() - now;
-        if (frameDelay > 0 && frameTime < (Uint32)frameDelay) {
-            SDL_Delay(frameDelay - frameTime);
+        Uint32 frame_time = SDL_GetTicks() - now;
+        if (frame_time < (Uint32)frame_delay) {
+            SDL_Delay(frame_delay - frame_time);
         }
 	}
 
@@ -149,7 +153,6 @@ void phisics(float dt, Stage* playground){
     // y la velocidad es 0, se detiene la animación del jugador.
     if(player->get_velocity().get_x() == 0)
         player->set_move_dir_x(0);
-
     // Recoger las teclas presionadas
     keyPressed(dt);
     // Actualizar la posición de los objetos en el escenario

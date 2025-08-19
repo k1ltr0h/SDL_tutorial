@@ -57,7 +57,6 @@ void GameObject::render(SDL_Renderer* renderer){
 void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& all_objects){
     // Límite de seguridad para evitar loops infinitos si quedara "encajado"
     std::vector<const GameObject*> candidates;
-    const int max_impacts_per_frame = 4;
     float remaining_t = dt;
     int impacts = 0;
 
@@ -88,20 +87,19 @@ void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& al
         if (b.right()  < min_x || b.left() > max_x ||
             b.bottom() < min_y || b.top()  > max_y){
                 // Si no hay colisión, saltar al siguiente objeto
-
                 continue;
-            }
+        }
         // Si hay colisión, añadir a la lista de candidatos
         // para el cálculo de colisiones continuas
         candidates.push_back(other);
     }
 
     // Bucle: consumir dt en varios “sub‑pasos” si hay impactos encadenados
-    while (remaining_t > 0.0f && impacts < max_impacts_per_frame) {
+    while (remaining_t > 0.0f && impacts < config.get_max_impacts_per_frame()) {
         // 1) Predicción con el tiempo restante
         pos_next = predict_position(remaining_t);
         vel_next = predict_velocity(remaining_t);
-
+        
         float dx = pos_next.get_x() - pos.get_x();
         float dy = pos_next.get_y() - pos.get_y();
 
@@ -122,36 +120,36 @@ void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& al
         float impact_fraction = 1.0f;   // en [0..1] respecto a remaining_t
         int impact_axis = -1;           // 0 = X, 1 = Y
         const GameObject* impact_target = nullptr;
+        std::vector<const GameObject*>::iterator iter;
 
-        for (const GameObject* other : candidates) {
-            if (other == this || !(other->is_collidable()))
+        for (iter = candidates.begin(); iter != candidates.end(); ) {
+            if (*iter == this){
+                iter++;
                 continue;
-
-            const Hitbox b = other->get_hit_box();
+            }
+            const Hitbox b = (*iter)->get_hit_box();
 
             // Broad‑phase rápido
             if (b.right()  < min_x || b.left() > max_x ||
                 b.bottom() < min_y || b.top()  > max_y){
                     // Si no hay colisión, saltar al siguiente objeto
-                    std::swap(other, candidates.back()); 
+                    std::swap((*iter), candidates.back()); 
                     candidates.pop_back();    
                     continue;
-                }
+            }
 
             float candidate_t; 
             int candidate_axis;
-            if (swept_aabb(*other, dx, dy, candidate_t, candidate_axis) && candidate_t < impact_fraction) {
+            if (swept_aabb(*(*iter), dx, dy, candidate_t, candidate_axis) && candidate_t < impact_fraction) {
                 impact_fraction = candidate_t;
                 impact_axis     = candidate_axis;
-                impact_target   = other;
+                impact_target   = (*iter);
             }
+            iter++;
         }
 
         if (!impact_target) {
-            // 3a) No hay impactos: avanzar todo el tiempo restante y salir
-            update_position(remaining_t);
-            update_velocity(remaining_t);
-            remaining_t = 0.0f;
+            // 3a) No hay impactos
             break;
         }
 
@@ -199,8 +197,9 @@ void GameObject::resolve_collisions(float dt, const std::vector<GameObject*>& al
         //       dentro del mismo frame SÍ se detecta.
     }
 
-    // Si excedimos el máximo de impactos, evita deadlocks consumiendo el tiempo que quede
-    if (remaining_t > 0.0f && impacts >= max_impacts_per_frame) {
+    // Si excedimos el máximo de impactos o no quedan más colisiones,
+    // actualizar la posición y velocidad con el tiempo restante
+    if (remaining_t > 0.0f) {
         update_position(remaining_t);
         update_velocity(remaining_t);
     }
@@ -232,7 +231,7 @@ bool GameObject::swept_aabb(const GameObject& obstacle,
     // y devolver infinito si el denominador es cero
     float (*safe_inverse)(float) = [](float v) -> float {
         const float eps = 1e-8f;
-        return (std::fabs(v) < eps) ? std::numeric_limits<float>::infinity() : 1.0f / v;
+        return (std::abs(v) < eps) ? std::numeric_limits<float>::infinity() : 1.0f / v;
     };
 
     const float inv_dx = safe_inverse(dx);

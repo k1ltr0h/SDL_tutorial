@@ -13,6 +13,7 @@ public:
     int get_targetFPS() const { return target_fps_; }
     int get_frames_per_sprite() const { return frames_per_sprite_; }
     int get_anim_steps_per_sec() const { return anim_steps_per_sec_; }
+    int get_max_impacts_per_frame() const { return max_impacts_per_frame; }
     float get_gravity() const { return gravity_; }
     float get_eps() const { return eps_; }
 
@@ -20,17 +21,30 @@ public:
         window_width = width;
         window_height = height;
     }
+
     void set_targetFPS(int fps) {
         if(fps <= 0) return;
         if (fps != target_fps_) {
             target_fps_ = fps;
-            frames_per_sprite_ = target_fps_ / anim_steps_per_sec_;
+            update_frames_per_sprite();
         }
     }
-    void animStepsPerSec(int steps) {
+
+    void set_anim_steps_per_sec(int steps) {
         if(steps <= 0) return;
         anim_steps_per_sec_ = steps;
+        update_frames_per_sprite();
     }
+
+    void update_frames_per_sprite() {
+        frames_per_sprite_ = target_fps_ / anim_steps_per_sec_;
+    }
+
+    void set_max_impacts_per_frame(int max_impacts) {
+        if(max_impacts <= 0) return;
+        max_impacts_per_frame = max_impacts;
+    }
+
     void set_gravity(float g) { gravity_ = g; }
     void set_eps(float e) { eps_ = e; }
 
@@ -42,8 +56,10 @@ private:
     int target_fps_ = 30;       // cuadros por segundo
     int frames_per_sprite_ = 5;
     int anim_steps_per_sec_ = 6;  // pasos de animación por segundo
+    int max_impacts_per_frame = 4; // máximo de impactos por frame
     float gravity_ = 2000.0f;  // px/s²
     float eps_ = 0.0f;        // tolerancia numérica
+
 };
 
 // Se crea una instancia global de configuración

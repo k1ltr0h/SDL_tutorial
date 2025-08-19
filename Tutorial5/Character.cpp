@@ -10,6 +10,7 @@ GameObject::GameObject(sur_, rect_, pos_, collidable_, grav_activated_){
 
 void Character::update(float dt, Vector2D& camera_offset, const std::vector<GameObject*>& allObjects){
     GameObject::update(dt, camera_offset, allObjects);
+    
     animate();
 }
 
@@ -19,7 +20,7 @@ void Character::animate(){
     bool need_flip = false;
 
     // Animación de sprites
-    if(spriteFrameCounter % config.get_frames_per_sprite() == 0){
+    if(sprite_frame_counter % config.get_frames_per_sprite() == 0){
         // Si no se ha movido, no cambia el sprite
         if((get_move_dir_x() < 0 || get_move_dir_x() > 0) && get_surface_width() - src_rect.w > 0){
             new_src_x =  src_rect.w + (src_rect.x % (get_surface_width() - src_rect.w));
@@ -43,10 +44,10 @@ void Character::animate(){
         }
         // Actualiza la posición del sprite en el sprite sheet
         set_src_rect(new_src_x, src_rect.y, src_rect.w, src_rect.h);
-        spriteFrameCounter = 0;
+        sprite_frame_counter = 0;
     }
     // Incrementa el contador de frames
-    spriteFrameCounter++;
+    sprite_frame_counter++;
 }
 
 void Character::jump(){
