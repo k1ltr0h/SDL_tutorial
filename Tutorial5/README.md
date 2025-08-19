@@ -1,15 +1,47 @@
-# Tutorial parte 4
+# Tutorial parte 5
 
 ## Actualizaciones
 
-* Motor refactorizado.
+1. Sistema de física y colisiones
 
-* GameObject se encarga de centrar sprites y actualizar src_rect y dst_rect.
-* Toda la lógica de Init se a trasladado a constructores.
-* Nuevas clases Box, Layer, Stage y Stage0.
-* Stage representa el entorno (simulación) en el que los objetos interactúan entre sí. Por lo tanto, es quien se encarga de actualizar y renderizar desde el fondo, efectos, personajes y otros objetos.
-* Cambios en nombres de variables.
-* Cambios en el formato de nombres en variables y funciones (minúsculas y separados con _).
-* Gameobject cuenta con nuevas variables como on_air y orientation. La primera es un bool que representa si el objeto está en el aire o tocando el suelo y el segundo es utilizado para saber hacia donde mira el objeto.
-
-* Entre otros (ver video en youtube).
+* Antes:
+    - La gravedad estaba “hardcodeada” con un valor fijo.
+    - Las colisiones eran muy básicas, con detección limitada y posiciones forzadas (ej. GROUND fijo).
+* Ahora:
+    - Se implementó un sistema completo de colisiones continuas (Swept AABB) con broad-phase para descartar objetos lejanos y narrow-phase precisa.
+    - Soporta múltiples impactos en un mismo frame.
+    - El cálculo usa dt real, lo que hace que la física sea independiente del framerate.
+    - Hitboxes configurables y desacoplados del tamaño del sprite.
+2. Animación de sprites
+* Antes:
+    - No existía un sistema de animación automático, solo render estático.
+* Ahora:
+    - Se agregó animación por sprite sheet con control de frames desde GameConfig.
+    - Soporta flip horizontal automático al cambiar de dirección.
+    - El personaje solo avanza de frame si hay movimiento (optimización visual).
+3. Gestión de objetos y clases nuevas
+* Antes:
+    - Objetos como Box y Background heredaban directamente de GameObject o Layer.
+    - No había un objeto específico para suelos.
+* Ahora:
+    - Se añade Platform, que puede dibujarse en mosaico para crear suelos y muros largos.
+    - GameObject ahora maneja tipos de objeto (PLAYER, PLATFORM, NPC) y estado (static, on_air, etc.).
+    - Se introduce un coyote time infinito: el jugador puede saltar una vez aunque ya esté “en el aire” desde que dejó el suelo.
+4. Cámara y escenario
+* Antes:
+    - La cámara estaba fija y el render centraba manualmente objetos.
+* Ahora:
+    - El Stage integra una cámara con seguimiento al jugador y límites según el tamaño del fondo.
+    - update_dst_rect_from_pos() centraliza el cálculo de posiciones en pantalla usando offset de cámara.
+5. Control y loop principal
+* Antes:
+    - Uso de SDL_AddTimer para física y render, con tiempos fijos.
+* Ahora:
+    - Un solo bucle principal que mide dt en cada frame, sincronizando física y render con SDL_GetTicks().
+    - Esto elimina dependencias de temporizadores y hace que la simulación sea suave y consistente.
+6. Configuración centralizada
+* Antes:
+    - Parámetros como FPS, gravedad y tamaño de ventana estaban dispersos o fijos en el código.
+* Ahora:
+    - Se añade GameConfig para manejar valores globales como FPS objetivo, gravedad, tolerancia de colisiones y velocidad de animación.
+    - Facilita ajustes sin tocar el código principal.
